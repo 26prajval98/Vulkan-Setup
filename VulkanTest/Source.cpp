@@ -7,15 +7,24 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
+#include <map>
+#include <optional>
 
 #define DEBUG
 
 const int width = 800;
 const int height = 600;
 
+struct QueueFamilyIndices {
+	std::optional<uint32_t> graphicsFamily;
+
+	bool isComplete() {
+		return graphicsFamily.has_value();
+	}
+};
 
 // All of the useful standard validation is bundled into a layer included in the SDK that is known as VK_LAYER_KHRONOS_validation
-std::vector<const char *>validLayers = { "VK_LAYER_KHRONOS_validation"};
+std::vector<const char *>validLayers = { "VK_LAYER_KHRONOS_validation" };
 
 const unsigned int validLayersCount = static_cast<unsigned int> (validLayers.size());
 
@@ -61,7 +70,12 @@ private:
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
-
+	// Initialize to no devices
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	// Can have multiple logical devices but we are choosing only 1
+	VkDevice device;
+	// to get any queue vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+	VkQueue graphicsQueue;
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -141,8 +155,7 @@ private:
 	}
 
 
-	void createInstance()
-	{
+	void createInstance() {
 
 		if (enableValidationLayer && !checkValidationLayerSupport())
 		{
@@ -216,9 +229,132 @@ private:
 	}
 
 
+	int rateDeviceSuitability(VkPhysicalDevice device) {
+
+		int score = 0;
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		// Discrete GPUs have a significant performance advantage
+		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+			score += 1000;
+		}
+
+		// Maximum possible size of textures affects graphics quality
+		score += deviceProperties.limits.maxImageDimension2D;
+
+		// Application can't function without geometry shaders
+		if (!deviceFeatures.geometryShader) {
+			return 0;
+		}
+
+		return score;
+	}
+
+
+	// Pick up the best device available
+	void pickPhysicalDevice() {
+
+		// Get number of devices and put it in a vector
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+		if (deviceCount == 0) {
+			throw std::runtime_error("failed to find GPUs with Vulkan support!");
+		}
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+		// Use an ordered map to automatically sort candidates by increasing score
+		std::multimap<int, VkPhysicalDevice> candidates;
+
+		for (const auto& device : devices) {
+			QueueFamilyIndices indices = findQueueFamilies(device);
+			if (indices.isComplete()) {
+				int score = rateDeviceSuitability(device);
+				candidates.insert(std::make_pair(score, device));
+			}
+		}
+
+		// Check if the best candidate is suitable at all
+		if (candidates.rbegin()->first > 0) {
+			physicalDevice = candidates.rbegin()->second;
+		}
+		else {
+			throw std::runtime_error("failed to find a suitable GPU!");
+		}
+	}
+
+
+	// Select atleast 1 queue family with VK_QUEUE_GRAPHICS_BIT and add all such devices to your mapVK_QUEUE_GRAPHICS_BIT
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+		QueueFamilyIndices indices;
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies) {
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				indices.graphicsFamily = i;
+			}
+			if (indices.isComplete()) {
+				break;
+			}
+			i++;
+		}
+
+		return indices;
+	}
+
+
+
+	void createLogicalDevice() {
+		
+		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+		queueCreateInfo.queueCount = 1;
+		// Priority influeneces the scheduling of command buffer execution
+		float queuePriority = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+	
+		// Specify device features
+		VkPhysicalDeviceFeatures deviceFeatures = {};
+
+		// Creating the logical device i.e combine both the above structures	
+		VkDeviceCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.queueCreateInfoCount = 1;
+		createInfo.pEnabledFeatures = &deviceFeatures;
+		// No need for device specific but done so for compatability with old versions of Vulkan
+		createInfo.enabledExtensionCount = 0;
+		if (enableValidationLayer) {
+			createInfo.enabledLayerCount = static_cast<uint32_t>(validLayers.size());
+			createInfo.ppEnabledLayerNames = validLayers.data();
+		}
+		else {
+			createInfo.enabledLayerCount = 0;
+		}
+
+		// Create logical device
+		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create logical device!");
+		}
+	}
+
+
 	void initVulkan() {
 		createInstance();
 		setupDebugMessenger();
+		pickPhysicalDevice();
+		createLogicalDevice();
 	}
 
 
@@ -232,6 +368,9 @@ private:
 
 
 	void cleanup() {
+
+		vkDestroyDevice(device, nullptr);
+
 		if (enableValidationLayer) {
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 		}
