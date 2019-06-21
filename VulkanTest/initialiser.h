@@ -28,7 +28,6 @@ namespace initialiser {
 	{
 		VkDeviceQueueCreateInfo queueInfo = {};
 		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueInfo.pNext = nullptr;
 		queueInfo.queueCount = 1;
 		queueInfo.queueFamilyIndex = queueFamilyIndex;
 		queueInfo.pQueuePriorities = &priority;
@@ -42,12 +41,6 @@ namespace initialiser {
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.ppEnabledExtensionNames = nullptr;
-		createInfo.ppEnabledLayerNames = nullptr;
-		createInfo.enabledExtensionCount = 0;
-		createInfo.enabledLayerCount = 0;
-		createInfo.ppEnabledExtensionNames = nullptr;
-		createInfo.ppEnabledLayerNames = nullptr;
 		return createInfo;
 	}
 }
