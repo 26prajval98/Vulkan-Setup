@@ -20,21 +20,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader.vert">
+    <ClInclude Include="initialiser.h">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="shader.frag">
+    </ClInclude>
+    <ClInclude Include="Header.h">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="frag.spv">
+    </ClInclude>
+    <ClInclude Include="instance.h">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="vert.spv">
+    </ClInclude>
+    <ClInclude Include="physicaldevice.h">
       <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="read_file.h">
+    </ClInclude>
+    <ClInclude Include="queuefamily.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="device.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

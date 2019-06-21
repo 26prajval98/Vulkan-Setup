@@ -162,13 +162,12 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="frag.spv" />
-    <None Include="shader.frag" />
-    <None Include="shader.vert" />
-    <None Include="vert.spv" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="read_file.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="initialiser.h" />
+    <ClInclude Include="instance.h" />
+    <ClInclude Include="physicaldevice.h" />
+    <ClInclude Include="queuefamily.h" />
+    <ClInclude Include="device.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
