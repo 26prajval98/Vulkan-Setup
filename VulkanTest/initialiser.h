@@ -34,7 +34,7 @@ namespace initialiser {
 		return queueInfo;
 	}
 
-	VkDeviceCreateInfo createDeviceInfo(std::vector<VkDeviceQueueCreateInfo> queueCreateInfos, const VkPhysicalDeviceFeatures &deviceFeatures)
+	VkDeviceCreateInfo createDeviceInfo(std::vector<VkDeviceQueueCreateInfo> & queueCreateInfos, const VkPhysicalDeviceFeatures &deviceFeatures)
 	{
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
