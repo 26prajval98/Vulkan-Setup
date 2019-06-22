@@ -162,6 +162,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="defines.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="initialiser.h" />
     <ClInclude Include="instance.h" />

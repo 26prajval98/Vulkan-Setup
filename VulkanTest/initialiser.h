@@ -43,4 +43,20 @@ namespace initialiser {
 		createInfo.pEnabledFeatures = &deviceFeatures;
 		return createInfo;
 	}
+
+	VkCommandPoolCreateInfo createComputePoolInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
+		VkCommandPoolCreateInfo createInfo = {};
+		createInfo.flags = flags;
+		createInfo.queueFamilyIndex = queueFamilyIndex;
+		return createInfo;
+	}
+
+	VkCommandBufferAllocateInfo createCommandBufferAllocateInfo(VkCommandPool& pool, uint32_t count) {
+		VkCommandBufferAllocateInfo createInfo = {};
+		createInfo.commandPool = pool;
+		createInfo.commandBufferCount = count;
+		createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		return createInfo;
+	}
 }
