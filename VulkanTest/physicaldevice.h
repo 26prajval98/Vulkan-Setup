@@ -1,13 +1,9 @@
 #pragma once
-#include "Header.h"
 
-struct QueueFamilyIndices {
-	uint32_t graphicIndices = UINT32_MAX;
-	uint32_t computeIndices = UINT32_MAX;
-	bool isComplete() {
-		return (graphicIndices < UINT32_MAX && computeIndices < UINT32_MAX);
-	}
-};
+#include "Header.h"
+#include "physicaldevice.h"
+#include "windowsurface.h"
+#include "queuefamily.h"
 
 class PhysicalDevice
 {
@@ -48,17 +44,25 @@ public:
 		return m_physicalDeviceFeatures;
 	}
 
+	VkBool32 doesSupportWindowSurface(WindowSurface * windowSurface) {
+		m_windowSurface = windowSurface;
+		VkBool32 windowSurfaceSupport = VK_FALSE;
+		vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_queueFamilyIndices.computeIndices, m_windowSurface->getWindowSurface(), &windowSurfaceSupport);
+		return windowSurfaceSupport;
+	}
+
 	~PhysicalDevice();
 
 private:
 	Instance * m_instance;
-	
+	WindowSurface * m_windowSurface;
+
 	VkPhysicalDevice m_physicalDevice;
 	VkPhysicalDeviceProperties m_physicalDeviceProperties;
 	VkPhysicalDeviceFeatures m_physicalDeviceFeatures;
 	VkPhysicalDeviceMemoryProperties m_physicalDeviceMemoryProperties;
 
-	PhysicalDevice(VkPhysicalDevice& physicalDevice, Instance * instance, QueueFamilyIndices queueFamilyIndices) : m_instance(instance), m_queueFamilyIndices(queueFamilyIndices), m_physicalDevice(physicalDevice)
+	PhysicalDevice(VkPhysicalDevice& physicalDevice, Instance * instance, QueueFamilyIndices queueFamilyIndices, WindowSurface * windowSurface = nullptr) : m_instance(instance), m_queueFamilyIndices(queueFamilyIndices), m_physicalDevice(physicalDevice), m_windowSurface(windowSurface)
 	{
 		vkGetPhysicalDeviceProperties(m_physicalDevice, &m_physicalDeviceProperties);
 		vkGetPhysicalDeviceFeatures(m_physicalDevice, &m_physicalDeviceFeatures);

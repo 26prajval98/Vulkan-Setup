@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Header.h"
 #include "defines.h"
+#include "initialiser.h"
+#include "instance.h"
+#include "physicaldevice.h"
 
 class Device
 {

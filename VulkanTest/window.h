@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Header.h"
+#include "Header.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Header.h"
+#ifndef QUEUE_FAMILY_HEADER_
+#define QUEUE_FAMILY_HEADER_
 
 struct QueueFamilyIndices {
 	uint32_t graphicIndices = UINT32_MAX;
@@ -10,3 +11,4 @@ struct QueueFamilyIndices {
 	}
 };
 
+#endif

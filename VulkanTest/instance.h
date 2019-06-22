@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Header.h"
+#include "initialiser.h"
 
 class Instance
 {
