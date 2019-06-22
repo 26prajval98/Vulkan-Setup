@@ -20,6 +20,14 @@ public:
 		return m_computeQueue;
 	}
 
+	VkQueue getPresentQueue() {
+		return m_presentQueue;
+	}
+
+	VkQueue getGraphicsQueue() {
+		return m_graphicsQueue;
+	}
+
 	VkCommandPool getCommandPool() {
 		return m_commandPool;
 	}
@@ -41,6 +49,8 @@ private:
 	PhysicalDevice * m_physicalDevice;
 
 	VkQueue m_computeQueue;
+	VkQueue m_presentQueue;
+	VkQueue m_graphicsQueue;
 	VkDevice m_device;
 	VkCommandPool m_commandPool;
 
@@ -57,7 +67,7 @@ Device::Device(Instance * instance, PhysicalDevice * physicalDevice) : m_instanc
 	queueInfos.push_back(initialiser::createDeviceQueueInfo(physicalDevice->getQueueFamilyIndices().computeIndices, priority));
 
 	VkDeviceCreateInfo createInfo = initialiser::createDeviceInfo(queueInfos, m_physicalDevice->getDeviceFeatures());
-	22222222
+
 	VkResult vr = vkCreateDevice(
 		m_physicalDevice->getPhysicalDevice(),
 		&createInfo,
@@ -73,6 +83,21 @@ Device::Device(Instance * instance, PhysicalDevice * physicalDevice) : m_instanc
 		0, 
 		&m_computeQueue
 	);
+
+	vkGetDeviceQueue(
+		m_device,
+		physicalDevice->getQueueFamilyIndices().computeIndices,
+		0,
+		&m_presentQueue
+	);
+
+	vkGetDeviceQueue(
+		m_device,
+		physicalDevice->getQueueFamilyIndices().graphicIndices,
+		0,
+		&m_graphicsQueue
+	);
+
 	createCommandPool();
 }
 

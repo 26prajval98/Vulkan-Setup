@@ -23,7 +23,22 @@ private:
 Instance::Instance()
 {
 	VkResult res;
+	
 	// Instance creation
+	layers.push_back("VK_LAYER_LUNARG_standard_validation");
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions;
+
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	//const char* extensions_array[] = {
+	//	"VK_EXT_debug_report",
+	//	"VK_KHR_surface",
+	//};
+
+	extensions = std::vector<const char *>(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	
+	extensions.push_back("VK_EXT_debug_report");
+
 	VkApplicationInfo appInfo = initialiser::createAppInfo();
 	VkInstanceCreateInfo createInfo = initialiser::createInfo(appInfo, extensions, layers);
 	res = vkCreateInstance(&createInfo, nullptr, &m_instance);

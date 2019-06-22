@@ -12,7 +12,7 @@ namespace initialiser {
 		return appInfo;
 	}
 
-	VkInstanceCreateInfo createInfo(VkApplicationInfo & appInfo, std::vector<const char *>extensions, std::vector<const char *>layers) {
+	VkInstanceCreateInfo createInfo(VkApplicationInfo & appInfo, std::vector<const char *>&extensions, std::vector<const char *>&layers) {
 		VkInstanceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
@@ -46,6 +46,7 @@ namespace initialiser {
 
 	VkCommandPoolCreateInfo createComputePoolInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
 		VkCommandPoolCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		createInfo.flags = flags;
 		createInfo.queueFamilyIndex = queueFamilyIndex;
 		return createInfo;

@@ -41,5 +41,14 @@
     <ClInclude Include="defines.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="buffer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="window.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windowsurface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

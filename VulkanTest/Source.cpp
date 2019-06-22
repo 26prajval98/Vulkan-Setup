@@ -3,9 +3,13 @@
 Instance * instance;
 PhysicalDevice * physicalDevice;
 Device * device;
+Window * window;
+WindowSurface * windowSurface;
 
 int main() {
+	window = new Window();
 	instance = new Instance();
+	windowSurface = new WindowSurface(instance, window);
 	physicalDevice = PhysicalDevice::GetPhysicalDevice(instance);
 	device = new Device(instance, physicalDevice);
 	
@@ -17,6 +21,8 @@ int main() {
 
 	delete(device);
 	delete(physicalDevice);
+	delete(windowSurface);
 	delete(instance);
+	delete(window);
 	return 0;
 }

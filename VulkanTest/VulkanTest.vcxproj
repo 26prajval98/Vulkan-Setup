@@ -162,6 +162,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="buffer.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="initialiser.h" />
@@ -169,6 +170,8 @@
     <ClInclude Include="physicaldevice.h" />
     <ClInclude Include="queuefamily.h" />
     <ClInclude Include="device.h" />
+    <ClInclude Include="window.h" />
+    <ClInclude Include="windowsurface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
