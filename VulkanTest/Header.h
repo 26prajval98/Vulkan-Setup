@@ -5,6 +5,10 @@
 #include<iostream>
 #include <vector>
 #include <assert.h>
+#include <algorithm> 
+
+const int WIDTH = 800;
+const int HEIGHT = 600;
 
 //#include "initialiser.h"
 //#include "instance.h"

@@ -6,12 +6,14 @@
 #include "instance.h"
 #include "physicaldevice.h"
 #include "queuefamily.h"
+#include "swapchain.h"
 #include "window.h"
 #include "windowsurface.h"
 
 Instance * instance;
 PhysicalDevice * physicalDevice;
 Device * device;
+SwapChain * swapChain;
 Window * window;
 WindowSurface * windowSurface;
 
@@ -31,6 +33,9 @@ int main() {
 
 	device->freeComputeCommand(commands, 3);
 
+	swapChain = new SwapChain(device, physicalDevice, windowSurface);
+
+	delete(swapChain);
 	delete(device);
 	delete(physicalDevice);
 	delete(windowSurface);

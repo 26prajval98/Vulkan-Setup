@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Header.h"
-#include "physicaldevice.h"
 #include "windowsurface.h"
 #include "queuefamily.h"
 
