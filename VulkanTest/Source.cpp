@@ -6,16 +6,18 @@
 #include "instance.h"
 #include "physicaldevice.h"
 #include "queuefamily.h"
+#include "shaders.h"
 #include "swapchain.h"
 #include "window.h"
 #include "windowsurface.h"
 
+Window * window;
 Instance * instance;
+WindowSurface * windowSurface;
 PhysicalDevice * physicalDevice;
 Device * device;
 SwapChain * swapChain;
-Window * window;
-WindowSurface * windowSurface;
+Shaders * shaders;
 
 int main() {
 	window = new Window();
@@ -35,6 +37,9 @@ int main() {
 
 	swapChain = new SwapChain(device, physicalDevice, windowSurface);
 
+	shaders = new Shaders(device);
+
+	delete(shaders);
 	delete(swapChain);
 	delete(device);
 	delete(physicalDevice);

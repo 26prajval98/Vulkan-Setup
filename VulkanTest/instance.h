@@ -41,7 +41,7 @@ Instance::Instance()
 	extensions.push_back("VK_EXT_debug_report");
 
 	VkApplicationInfo appInfo = initialiser::createAppInfo();
-	VkInstanceCreateInfo createInfo = initialiser::createInfo(appInfo, extensions, layers);
+	VkInstanceCreateInfo createInfo = initialiser::createInstanceInfo(appInfo, extensions, layers);
 	res = vkCreateInstance(&createInfo, nullptr, &m_instance);
 
 	assert(VK_SUCCESS == res && "INSTANCE ERROR");

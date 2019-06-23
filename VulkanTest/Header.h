@@ -6,6 +6,7 @@
 #include <vector>
 #include <assert.h>
 #include <algorithm> 
+#include <fstream>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;

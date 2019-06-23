@@ -13,7 +13,7 @@ namespace initialiser {
 		return appInfo;
 	}
 
-	VkInstanceCreateInfo createInfo(VkApplicationInfo & appInfo, std::vector<const char *>&extensions, std::vector<const char *>&layers) {
+	VkInstanceCreateInfo createInstanceInfo(VkApplicationInfo & appInfo, std::vector<const char *>&extensions, std::vector<const char *>&layers) {
 		VkInstanceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
@@ -108,6 +108,16 @@ namespace initialiser {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
+		return createInfo;
+	}
+
+	VkShaderModuleCreateInfo createShaderModuleInfo(const std::vector<char>& code) {
+		// Do not think of this much
+		VkShaderModuleCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = code.size();
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+		
 		return createInfo;
 	}
 }
