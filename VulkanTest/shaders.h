@@ -27,10 +27,12 @@ private:
 
 Shaders::Shaders(Device * device) : m_device(device)
 {
-	auto createInfo_0 = initialiser::createShaderModuleInfo(readFile("vert.spv"));
+	auto code_vertex = readFile("vert.spv");
+	auto createInfo_0 = initialiser::createShaderModuleInfo(code_vertex);
 	ASSERT(vkCreateShaderModule(m_device->getDevice(), &createInfo_0, nullptr, &m_vertexShaderModule), "UNABLE TO CREATE SHADER MODULE");
 
-	auto createInfo_1 = initialiser::createShaderModuleInfo(readFile("frag.spv"));
+	auto code_fragment = readFile("frag.spv");
+	auto createInfo_1 = initialiser::createShaderModuleInfo(code_fragment);
 	ASSERT(vkCreateShaderModule(m_device->getDevice(), &createInfo_1, nullptr, &m_fragmentShaderModule), "UNABLE TO CREATE SHADER MODULE");
 }
 

@@ -85,7 +85,6 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 	m_pipelineLayoutInfos = {};
 	auto createInfo_1 = initialiser::createGrpahicsPipilineInfo(pipelineStages, m_pipelineLayout, renderPass->getRenderPass(), 0);
 	m_pipelineLayoutInfos.push_back(createInfo_1);
-	auto x = vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, U(m_pipelineLayoutInfos.size()), m_pipelineLayoutInfos.data(), nullptr, &m_pipeline);
 	ASSERT(vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, U(m_pipelineLayoutInfos.size()), m_pipelineLayoutInfos.data(), nullptr, &m_pipeline), "Unable to create graphics pipeline");
 }
 
