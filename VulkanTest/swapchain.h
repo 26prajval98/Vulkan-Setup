@@ -17,8 +17,13 @@ class SwapChain
 public:
 	SwapChain(Device * device, PhysicalDevice * physicalDevice, WindowSurface * windowSurface);
 	~SwapChain();
+
 	VkExtent2D getSwapChainExtent() {
 		return m_swapChainExtent;
+	}
+
+	VkSurfaceFormatKHR getSurfaceFormat() {
+		return m_surfaceFormat;
 	}
 
 private:
