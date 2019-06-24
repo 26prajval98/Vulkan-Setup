@@ -17,19 +17,23 @@ public:
 	}
 
 	void command(std::vector<VkCommandBuffer> &commandBuffer, std::vector<VkFramebuffer> frameBuffer, VkPipeline graphicsPipeline) {
-		VkClearValue clearColor = { 1.0f, 1.0f, 0.0f, 1.0f };
 		unsigned int i = 0;
 		for (auto& cb : commandBuffer) {
+			VkClearValue clearColor = { 1.0f, 1.0f, 0.0f, 1.0f };
+
 			auto createInfo_0 = initialiser::createCommandBeginInfo();
 			ASSERT(vkBeginCommandBuffer(cb, &createInfo_0), "Command Buffer unable to begin");
 
 			auto createInfo_1 = initialiser::createRenderPassBeginInfo(frameBuffer[i], m_swapChain->getSwapChainExtent(), m_renderPass, clearColor);
+			
 			// VK_SUBPASS_CONTENTS_INLINE means execute from primary command buffet
 			vkCmdBeginRenderPass(cb, &createInfo_1, VK_SUBPASS_CONTENTS_INLINE);
 			// VK_PIPELINE_BIND_POINT_GRAPHICS is graphics and 1 for compute
-			vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-			// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
-			vkCmdDraw(cb, 3, 1, 0, 0);
+			
+				vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+				// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
+				vkCmdDraw(cb, 3, 1, 0, 0);
+			
 			vkCmdEndRenderPass(cb);
 			ASSERT(vkEndCommandBuffer(cb),"Failed to record commands");
 			++i;
@@ -85,7 +89,7 @@ RenderPass::RenderPass(Device * device, SwapChain * swapChain) : m_device(device
 	*/
 
 	// Create A Single subpass
-	m_subpassDescriptions.resize(1);
+	m_subpassDescriptions = {};
 	VkSubpassDescription subpassDescription = {};
 	// Vulkan currently supports graphics subpass but might support compute ones in future
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;

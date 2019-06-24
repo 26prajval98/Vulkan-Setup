@@ -164,7 +164,6 @@
   <ItemGroup>
     <ClInclude Include="defines.h" />
     <ClInclude Include="framebuffer.h" />
-    <ClInclude Include="graphicsfunctions.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="initialiser.h" />
     <ClInclude Include="instance.h" />
