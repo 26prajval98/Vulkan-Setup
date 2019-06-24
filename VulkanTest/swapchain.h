@@ -27,10 +27,10 @@ public:
 	}
 
 private:
+	VkSurfaceFormatKHR m_surfaceFormat;
 	VkSwapchainKHR m_swapChain;
 	VkExtent2D m_swapChainExtent;
 	StructSwapChainImages m_swapChainImages;
-	VkSurfaceFormatKHR m_surfaceFormat;
 
 	Device * m_device;
 	PhysicalDevice * m_physicalDevice;
