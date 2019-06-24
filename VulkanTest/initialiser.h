@@ -299,4 +299,24 @@ namespace initialiser {
 		createInfo.pClearValues = &clearColor;
 		return createInfo;
 	}
+
+	VkSemaphoreCreateInfo createSemaphoreInfo() {
+		VkSemaphoreCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		return createInfo;
+	}
+
+	VkSubmitInfo createSubmitInfo(const VkSemaphore * waitSemaphores, const VkSemaphore * signalSemaphore, VkPipelineStageFlags * waitStages, VkCommandBuffer &commandBuffer) {
+		VkSubmitInfo createInfo = {};
+
+		createInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		createInfo.waitSemaphoreCount = sizeof(waitSemaphores)/sizeof(VkSemaphore);
+		createInfo.pWaitSemaphores = waitSemaphores;
+		createInfo.pWaitDstStageMask = waitStages;
+		createInfo.commandBufferCount = 1;
+		createInfo.pCommandBuffers = &commandBuffer;
+		createInfo.signalSemaphoreCount = sizeof(signalSemaphore) / sizeof(VkSemaphore);
+		createInfo.pSignalSemaphores = signalSemaphore;
+		return createInfo;
+	}
 }

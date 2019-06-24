@@ -74,6 +74,12 @@
     <ClInclude Include="framebuffer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="draw.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="semaphores.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag">

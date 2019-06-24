@@ -1,5 +1,6 @@
 //#include "Header.h"
 
+#include "draw.h"
 #include "defines.h"
 #include "device.h"
 #include "framebuffer.h"
@@ -13,6 +14,7 @@
 #include "swapchain.h"
 #include "window.h"
 #include "windowsurface.h"
+#include "semaphores.h"
 
 Window * window;
 Instance * instance;
@@ -24,6 +26,8 @@ Shaders * shaders;
 RenderPass * renderPass;
 Pipeline * pipeline;
 FrameBuffer * frameBuffer;
+Semaphore * semaphore;
+Draw * draw;
 
 int main() {
 	window = new Window();
@@ -55,14 +59,20 @@ int main() {
 
 	auto commands = std::vector<VkCommandBuffer>(cmdGraphicsBufferSize);
 
+	semaphore = new Semaphore(device);
+
 	device->getGraphicsCommand(commands, U(cmdGraphicsBufferSize));
 
 	// vkBeginCommandBuffer will always reset the command buffer
 
 	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline());
 
+	draw = new Draw(window, device, swapChain, semaphore, commands);
+	draw->drawFrame();
+
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
 	
+	delete(semaphore);
 	delete(frameBuffer);
 	delete(pipeline);
 	delete(renderPass);

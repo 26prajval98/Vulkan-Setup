@@ -35,6 +35,10 @@ public:
 		return m_swapChainImages.view;
 	}
 
+	VkSwapchainKHR getSwapChain() {
+		return m_swapChain;
+	}
+
 private:
 	VkSurfaceFormatKHR m_surfaceFormat;
 	VkSwapchainKHR m_swapChain;
