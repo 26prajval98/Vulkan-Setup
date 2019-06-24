@@ -1,5 +1,6 @@
 #pragma once
 #include "Header.h"
+#include "defines.h"
 
 namespace initialiser {
 
@@ -223,4 +224,14 @@ namespace initialiser {
 		createInfo.pPushConstantRanges = nullptr; // Optional
 		return createInfo;
 	};
+
+	VkRenderPassCreateInfo createRenderPassInfo(std::vector<VkAttachmentDescription>& attachmentReferences, std::vector<VkSubpassDescription>& subpassDescriptions) {
+		VkRenderPassCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		createInfo.attachmentCount = U(attachmentReferences.size());
+		createInfo.pAttachments = attachmentReferences.data();
+		createInfo.subpassCount = U(subpassDescriptions.size());
+		createInfo.pSubpasses = subpassDescriptions.data();
+		return createInfo;
+	}
 }

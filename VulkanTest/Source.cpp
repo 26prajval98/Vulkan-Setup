@@ -5,7 +5,9 @@
 #include "physicaldevice.h"
 #include "instance.h"
 #include "physicaldevice.h"
+#include "pipeline.h"
 #include "queuefamily.h"
+#include "renderpass.h"
 #include "shaders.h"
 #include "swapchain.h"
 #include "window.h"
@@ -18,6 +20,7 @@ PhysicalDevice * physicalDevice;
 Device * device;
 SwapChain * swapChain;
 Shaders * shaders;
+RenderPass * renderPass;
 
 int main() {
 	window = new Window();
@@ -39,6 +42,9 @@ int main() {
 
 	shaders = new Shaders(device);
 
+	renderPass = new RenderPass(device, swapChain);
+
+	delete(renderPass);
 	delete(shaders);
 	delete(swapChain);
 	delete(device);
