@@ -68,6 +68,9 @@
     <ClInclude Include="renderpass.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="readfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag">

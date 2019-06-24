@@ -4,6 +4,19 @@
 
 namespace initialiser {
 
+	struct PipelineStages {
+		VkPipelineShaderStageCreateInfo * pShaderStage;
+		VkPipelineVertexInputStateCreateInfo pipelineVertexInput;
+		VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyInfo;
+		VkPipelineViewportStateCreateInfo pipelineViewPortInfo;
+		VkPipelineRasterizationStateCreateInfo pipelineRasterizationInfo;
+		VkPipelineMultisampleStateCreateInfo pipelineMultisampleInfo;
+		VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilInfo;
+		VkPipelineColorBlendStateCreateInfo pipelineColorBlendInfo;
+		VkPipelineDynamicStateCreateInfo pipelineDynamicInfo;
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo;
+	};
+
 	VkApplicationInfo createAppInfo() {
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -233,5 +246,26 @@ namespace initialiser {
 		createInfo.subpassCount = U(subpassDescriptions.size());
 		createInfo.pSubpasses = subpassDescriptions.data();
 		return createInfo;
+	}
+
+	VkGraphicsPipelineCreateInfo createGrpahicsPipilineInfo(PipelineStages& pipelineStages, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, uint32_t subpassIndex) {
+		VkGraphicsPipelineCreateInfo pipelineInfo = {};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.stageCount = 2; //sizeof(pipelineStages.pShaderStage)/sizeof(VkPipelineShaderStageCreateInfo);
+		pipelineInfo.pStages = pipelineStages.pShaderStage;
+		pipelineInfo.pVertexInputState = &pipelineStages.pipelineVertexInput;
+		pipelineInfo.pInputAssemblyState = &pipelineStages.pipelineInputAssemblyInfo;
+		pipelineInfo.pViewportState = &pipelineStages.pipelineViewPortInfo;
+		pipelineInfo.pRasterizationState = &pipelineStages.pipelineRasterizationInfo;
+		pipelineInfo.pMultisampleState = &pipelineStages.pipelineMultisampleInfo;
+		pipelineInfo.pDepthStencilState = nullptr; // &pipelineStages.pipelineDepthStencilInfo; // Optional
+		pipelineInfo.pColorBlendState = &pipelineStages.pipelineColorBlendInfo;
+		pipelineInfo.pDynamicState = nullptr; //&pipelineStages.pipelineDynamicInfo; // Optional
+		pipelineInfo.layout = pipelineLayout;
+		pipelineInfo.renderPass = renderPass;
+
+		// the index of the subpass in the render pass where this pipeline will be used
+		pipelineInfo.subpass = subpassIndex;
+		return pipelineInfo;
 	}
 }

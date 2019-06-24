@@ -21,6 +21,7 @@ Device * device;
 SwapChain * swapChain;
 Shaders * shaders;
 RenderPass * renderPass;
+Pipeline * pipeline;
 
 int main() {
 	window = new Window();
@@ -43,7 +44,10 @@ int main() {
 	shaders = new Shaders(device);
 
 	renderPass = new RenderPass(device, swapChain);
+	
+	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
+	delete(pipeline);
 	delete(renderPass);
 	delete(shaders);
 	delete(swapChain);

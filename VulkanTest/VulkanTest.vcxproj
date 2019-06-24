@@ -170,6 +170,7 @@
     <ClInclude Include="pipeline.h" />
     <ClInclude Include="queuefamily.h" />
     <ClInclude Include="device.h" />
+    <ClInclude Include="readfile.h" />
     <ClInclude Include="renderpass.h" />
     <ClInclude Include="shaders.h" />
     <ClInclude Include="swapchain.h" />

@@ -12,6 +12,10 @@ public:
 	RenderPass(Device * device, SwapChain * swapChain);
 	~RenderPass();
 
+	VkRenderPass getRenderPass() {
+		return m_renderPass;
+	}
+
 private:
 	VkRenderPass m_renderPass;
 	std::vector<VkAttachmentDescription>m_attachmentDescriptions;
