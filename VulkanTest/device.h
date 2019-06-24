@@ -36,22 +36,22 @@ public:
 		return m_commandPool[0];
 	}
 
-	void getComputeCommand(VkCommandBuffer * buffers, uint32_t count) {
+	void getComputeCommand(std::vector<VkCommandBuffer> &buffers, uint32_t count) {
 		VkCommandBufferAllocateInfo createInfo = initialiser::createCommandBufferAllocateInfo(m_commandPool[0], count);
-		ASSERT(vkAllocateCommandBuffers(m_device, &createInfo, buffers), "UNABLE TO CREATE COMMAND BUFFER");
+		ASSERT(vkAllocateCommandBuffers(m_device, &createInfo, buffers.data()), "UNABLE TO CREATE COMMAND BUFFER");
 	}
 
-	void freeComputeCommand(VkCommandBuffer * buffers, uint32_t count) {
-		vkFreeCommandBuffers(m_device, m_commandPool[0], count, buffers);
+	void freeComputeCommand(std::vector<VkCommandBuffer> &buffers, uint32_t count) {
+		vkFreeCommandBuffers(m_device, m_commandPool[0], count, buffers.data());
 	}
 
-	void getGraphicsCommand(VkCommandBuffer * buffers, uint32_t count) {
+	void getGraphicsCommand(std::vector<VkCommandBuffer> &buffers, uint32_t count) {
 		VkCommandBufferAllocateInfo createInfo = initialiser::createCommandBufferAllocateInfo(m_commandPool[1], count);
-		ASSERT(vkAllocateCommandBuffers(m_device, &createInfo, buffers), "UNABLE TO CREATE COMMAND BUFFER");
+		ASSERT(vkAllocateCommandBuffers(m_device, &createInfo, buffers.data()), "UNABLE TO CREATE COMMAND BUFFER");
 	}
 
-	void freeGraphicsCommand(VkCommandBuffer * buffers, uint32_t count) {
-		vkFreeCommandBuffers(m_device, m_commandPool[1], count, buffers);
+	void freeGraphicsCommand(std::vector<VkCommandBuffer> &buffers, uint32_t count) {
+		vkFreeCommandBuffers(m_device, m_commandPool[1], count, buffers.data());
 	}
 
 	~Device();

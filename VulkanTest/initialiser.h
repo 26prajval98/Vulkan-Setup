@@ -249,23 +249,54 @@ namespace initialiser {
 	}
 
 	VkGraphicsPipelineCreateInfo createGrpahicsPipilineInfo(PipelineStages& pipelineStages, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, uint32_t subpassIndex) {
-		VkGraphicsPipelineCreateInfo pipelineInfo = {};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount = 2; //sizeof(pipelineStages.pShaderStage)/sizeof(VkPipelineShaderStageCreateInfo);
-		pipelineInfo.pStages = pipelineStages.pShaderStage;
-		pipelineInfo.pVertexInputState = &pipelineStages.pipelineVertexInput;
-		pipelineInfo.pInputAssemblyState = &pipelineStages.pipelineInputAssemblyInfo;
-		pipelineInfo.pViewportState = &pipelineStages.pipelineViewPortInfo;
-		pipelineInfo.pRasterizationState = &pipelineStages.pipelineRasterizationInfo;
-		pipelineInfo.pMultisampleState = &pipelineStages.pipelineMultisampleInfo;
-		pipelineInfo.pDepthStencilState = nullptr; // &pipelineStages.pipelineDepthStencilInfo; // Optional
-		pipelineInfo.pColorBlendState = &pipelineStages.pipelineColorBlendInfo;
-		pipelineInfo.pDynamicState = nullptr; //&pipelineStages.pipelineDynamicInfo; // Optional
-		pipelineInfo.layout = pipelineLayout;
-		pipelineInfo.renderPass = renderPass;
+		VkGraphicsPipelineCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		createInfo.stageCount = 2; //sizeof(pipelineStages.pShaderStage)/sizeof(VkPipelineShaderStageCreateInfo);
+		createInfo.pStages = pipelineStages.pShaderStage;
+		createInfo.pVertexInputState = &pipelineStages.pipelineVertexInput;
+		createInfo.pInputAssemblyState = &pipelineStages.pipelineInputAssemblyInfo;
+		createInfo.pViewportState = &pipelineStages.pipelineViewPortInfo;
+		createInfo.pRasterizationState = &pipelineStages.pipelineRasterizationInfo;
+		createInfo.pMultisampleState = &pipelineStages.pipelineMultisampleInfo;
+		createInfo.pDepthStencilState = nullptr; // &pipelineStages.pipelineDepthStencilInfo; // Optional
+		createInfo.pColorBlendState = &pipelineStages.pipelineColorBlendInfo;
+		createInfo.pDynamicState = nullptr; //&pipelineStages.pipelineDynamicInfo; // Optional
+		createInfo.layout = pipelineLayout;
+		createInfo.renderPass = renderPass;
 
 		// the index of the subpass in the render pass where this pipeline will be used
-		pipelineInfo.subpass = subpassIndex;
-		return pipelineInfo;
+		createInfo.subpass = subpassIndex;
+		return createInfo;
+	}
+
+	VkFramebufferCreateInfo createFrameBufferInfo(VkImageView * imageViewAttachments, VkRenderPass renderPass, VkExtent2D extent) {
+		VkFramebufferCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		createInfo.renderPass = renderPass;
+		createInfo.attachmentCount = 1;
+		createInfo.pAttachments = imageViewAttachments;
+		createInfo.width = extent.width;
+		createInfo.height = extent.height;
+		createInfo.layers = 1;
+		return createInfo;
+	}
+
+	VkCommandBufferBeginInfo createCommandBeginInfo() {
+		VkCommandBufferBeginInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		createInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		return createInfo;
+	}
+
+	VkRenderPassBeginInfo createRenderPassBeginInfo(VkFramebuffer frameBuffer, VkExtent2D extent, VkRenderPass renderPass, VkClearValue &clearColor) {
+		VkRenderPassBeginInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		createInfo.renderPass = renderPass;
+		createInfo.framebuffer = frameBuffer;
+		createInfo.renderArea.offset = { 0, 0 };
+		createInfo.renderArea.extent = extent;
+		createInfo.clearValueCount = 1;
+		createInfo.pClearValues = &clearColor;
+		return createInfo;
 	}
 }

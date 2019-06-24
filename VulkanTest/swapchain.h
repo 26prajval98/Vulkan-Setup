@@ -26,6 +26,15 @@ public:
 		return m_surfaceFormat;
 	}
 
+	
+	std::vector<VkImage> getImages() {
+		return m_swapChainImages.image;
+	}
+
+	std::vector<VkImageView> getImageViews() {
+		return m_swapChainImages.view;
+	}
+
 private:
 	VkSurfaceFormatKHR m_surfaceFormat;
 	VkSwapchainKHR m_swapChain;

@@ -13,6 +13,10 @@ public:
 	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain);
 	~Pipeline();
 
+	VkPipeline getGraphicsPipeline() {
+		return m_pipeline;
+	}
+
 private:
 	initialiser::PipelineStages pipelineStages = {};
 	VkPipelineLayout m_pipelineLayout;

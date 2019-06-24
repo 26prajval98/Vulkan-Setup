@@ -2,6 +2,7 @@
 
 #include "defines.h"
 #include "device.h"
+#include "framebuffer.h"
 #include "physicaldevice.h"
 #include "instance.h"
 #include "physicaldevice.h"
@@ -22,6 +23,7 @@ SwapChain * swapChain;
 Shaders * shaders;
 RenderPass * renderPass;
 Pipeline * pipeline;
+FrameBuffer * frameBuffer;
 
 int main() {
 	window = new Window();
@@ -33,11 +35,11 @@ int main() {
 
 	device = new Device(instance, physicalDevice);
 	
-	VkCommandBuffer * commands = new VkCommandBuffer[3];
+	//VkCommandBuffer * commands = new VkCommandBuffer[3];
 
-	device->getComputeCommand(commands, 3);
+	//device->getComputeCommand(commands, 3);
 
-	device->freeComputeCommand(commands, 3);
+	//device->freeComputeCommand(commands, 3);
 
 	swapChain = new SwapChain(device, physicalDevice, windowSurface);
 
@@ -47,6 +49,21 @@ int main() {
 	
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
+	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
+
+	auto cmdGraphicsBufferSize = swapChain->getImageViews().size();
+
+	auto commands = std::vector<VkCommandBuffer>(cmdGraphicsBufferSize);
+
+	device->getGraphicsCommand(commands, U(cmdGraphicsBufferSize));
+
+	// vkBeginCommandBuffer will always reset the command buffer
+
+	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline());
+
+	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
+	
+	delete(frameBuffer);
 	delete(pipeline);
 	delete(renderPass);
 	delete(shaders);
