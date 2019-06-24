@@ -68,7 +68,6 @@ int main() {
 	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline());
 
 	draw = new Draw(window, device, swapChain, semaphore, commands);
-	draw->drawFrame();
 
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
 	
