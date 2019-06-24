@@ -167,6 +167,7 @@
     <ClInclude Include="initialiser.h" />
     <ClInclude Include="instance.h" />
     <ClInclude Include="physicaldevice.h" />
+    <ClInclude Include="pipeline.h" />
     <ClInclude Include="queuefamily.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="shaders.h" />

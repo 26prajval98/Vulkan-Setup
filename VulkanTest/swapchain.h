@@ -15,14 +15,17 @@ struct StructSwapChainImages {
 class SwapChain
 {
 public:
-	VkSurfaceFormatKHR surfaceFormat;
 	SwapChain(Device * device, PhysicalDevice * physicalDevice, WindowSurface * windowSurface);
 	~SwapChain();
+	VkExtent2D getSwapChainExtent() {
+		return m_swapChainExtent;
+	}
 
 private:
 	VkSwapchainKHR m_swapChain;
 	VkExtent2D m_swapChainExtent;
 	StructSwapChainImages m_swapChainImages;
+	VkSurfaceFormatKHR m_surfaceFormat;
 
 	Device * m_device;
 	PhysicalDevice * m_physicalDevice;
@@ -73,9 +76,9 @@ SwapChain::SwapChain(Device * device, PhysicalDevice * physicalDevice, WindowSur
 	uint32_t t_0 = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice->getPhysicalDevice(), m_windowSurface->getWindowSurface(), &t_0, nullptr);
 
-	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice->getPhysicalDevice(), m_windowSurface->getWindowSurface(), &t_0, &surfaceFormat);
+	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice->getPhysicalDevice(), m_windowSurface->getWindowSurface(), &t_0, &m_surfaceFormat);
 
-	createInfo.imageFormat = surfaceFormat.format;
+	createInfo.imageFormat = m_surfaceFormat.format;
 
 	ASSERT(vkCreateSwapchainKHR(m_device->getDevice(), &createInfo, nullptr, &m_swapChain), "UNABLE TO FORM SWAPCHAIN");
 

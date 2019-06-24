@@ -62,6 +62,9 @@
     <ClInclude Include="shaders.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="pipeline.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag">

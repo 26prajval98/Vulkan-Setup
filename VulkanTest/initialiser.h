@@ -117,7 +117,110 @@ namespace initialiser {
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-		
+
 		return createInfo;
 	}
+
+	VkPipelineShaderStageCreateInfo createPipelineShaderStageInfo(VkShaderModule shaderModule, VkShaderStageFlagBits stage = VK_SHADER_STAGE_FRAGMENT_BIT) {
+		VkPipelineShaderStageCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		createInfo.stage = stage;
+		createInfo.module = shaderModule;
+		createInfo.pName = "main";
+		return createInfo;
+	}
+
+	VkPipelineVertexInputStateCreateInfo createPipelineVertexInputStateInfo() {
+		VkPipelineVertexInputStateCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		createInfo.vertexBindingDescriptionCount = 0;
+		createInfo.pVertexBindingDescriptions = nullptr; // Optional
+		createInfo.vertexAttributeDescriptionCount = 0;
+		createInfo.pVertexAttributeDescriptions = nullptr; // Optional
+		return createInfo;
+	}
+
+	VkPipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyInfo() {
+		VkPipelineInputAssemblyStateCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		createInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		createInfo.primitiveRestartEnable = VK_FALSE;
+		return createInfo;
+	}
+
+	VkPipelineViewportStateCreateInfo createPipelineViewportStateInfo(VkViewport& viewport, VkRect2D& scissor) {
+		VkPipelineViewportStateCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		createInfo.viewportCount = 1;
+		createInfo.pViewports = &viewport;
+		createInfo.scissorCount = 1;
+		createInfo.pScissors = &scissor;
+		return createInfo;
+	}
+
+	VkPipelineRasterizationStateCreateInfo createPipelineRasterizationStateInfo() {
+		VkPipelineRasterizationStateCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		createInfo.depthClampEnable = VK_FALSE;
+		createInfo.rasterizerDiscardEnable = VK_FALSE;
+		createInfo.polygonMode = VK_POLYGON_MODE_FILL;
+		createInfo.lineWidth = 1.0f;
+		createInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		createInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		createInfo.depthBiasEnable = VK_FALSE;
+		createInfo.depthBiasConstantFactor = 0.0f; // Optional
+		createInfo.depthBiasClamp = 0.0f; // Optional
+		createInfo.depthBiasSlopeFactor = 0.0f; // Optional
+		return createInfo;
+	}
+
+	VkPipelineMultisampleStateCreateInfo createPipelineMultisampleStateInfo() {
+		VkPipelineMultisampleStateCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		createInfo.sampleShadingEnable = VK_FALSE;
+		createInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		createInfo.minSampleShading = 1.0f; // Optional
+		createInfo.pSampleMask = nullptr; // Optional
+		createInfo.alphaToCoverageEnable = VK_FALSE; // Optional
+		createInfo.alphaToOneEnable = VK_FALSE; // Optional
+		return createInfo;
+	}
+
+	VkPipelineDepthStencilStateCreateInfo createPipelineDepthStencilStateInfo() {
+		VkPipelineDepthStencilStateCreateInfo createState = {};
+		return createState;
+	}
+
+	VkPipelineColorBlendStateCreateInfo createPipelineColorBlendStateInfo(VkPipelineColorBlendAttachmentState& pipelineColorBlendAttachment) {
+		VkPipelineColorBlendStateCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		createInfo.logicOpEnable = VK_FALSE;
+		createInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
+		createInfo.attachmentCount = 1;
+		createInfo.pAttachments = &pipelineColorBlendAttachment;
+		// RGBA
+		createInfo.blendConstants[0] = 0.0f; // Optional
+		createInfo.blendConstants[1] = 0.0f; // Optional
+		createInfo.blendConstants[2] = 0.0f; // Optional
+		createInfo.blendConstants[3] = 0.0f; // Optional
+		return createInfo;
+	}
+
+	VkPipelineDynamicStateCreateInfo createPipelineDynamicStateInfo(VkDynamicState * pDynamicStates) {
+		VkPipelineDynamicStateCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		createInfo.dynamicStateCount = sizeof(pDynamicStates) / sizeof(VkDynamicState);
+		createInfo.pDynamicStates = pDynamicStates;
+		return createInfo;
+	}
+
+	VkPipelineLayoutCreateInfo createPipelineLayoutInfo() {
+		VkPipelineLayoutCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		createInfo.setLayoutCount = 0; // Optional
+		createInfo.pSetLayouts = nullptr; // Optional
+		createInfo.pushConstantRangeCount = 0; // Optional
+		createInfo.pPushConstantRanges = nullptr; // Optional
+		return createInfo;
+	};
 }
