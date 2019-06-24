@@ -319,4 +319,16 @@ namespace initialiser {
 		createInfo.pSignalSemaphores = signalSemaphore;
 		return createInfo;
 	}
+
+	VkPresentInfoKHR createPresentInfo(VkSemaphore * signalSemaphore, VkSwapchainKHR * swapChains, uint32_t &imageIndex) {
+		VkPresentInfoKHR createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		createInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		createInfo.waitSemaphoreCount = sizeof(signalSemaphore) / sizeof(VkSemaphore);
+		createInfo.pWaitSemaphores = signalSemaphore;
+		createInfo.swapchainCount = sizeof(swapChains) / sizeof(VkSwapchainKHR);
+		createInfo.pSwapchains = swapChains;
+		createInfo.pImageIndices = &imageIndex;
+		return createInfo;
+	}
 }

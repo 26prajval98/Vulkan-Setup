@@ -38,12 +38,6 @@ int main() {
 	ASSERT_VALUE(physicalDevice->doesSupportWindowSurface(windowSurface), VK_TRUE, "SURFACE NOT SUPPORTED");
 
 	device = new Device(instance, physicalDevice);
-	
-	//VkCommandBuffer * commands = new VkCommandBuffer[3];
-
-	//device->getComputeCommand(commands, 3);
-
-	//device->freeComputeCommand(commands, 3);
 
 	swapChain = new SwapChain(device, physicalDevice, windowSurface);
 
