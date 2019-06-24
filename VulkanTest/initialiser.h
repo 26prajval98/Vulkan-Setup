@@ -331,4 +331,12 @@ namespace initialiser {
 		createInfo.pImageIndices = &imageIndex;
 		return createInfo;
 	}
+
+	VkFenceCreateInfo createFenceInfo() {
+		VkFenceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		// create fences in signaled state
+		createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		return createInfo;
+	}
 }
