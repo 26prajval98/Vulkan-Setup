@@ -53,7 +53,7 @@ int main() {
 		{{0.5, -0.5}, {1.0, 0.0, 0.0}},
 	});
 
-	//vertexBuffer = new VertexBuffer(physicalDevice, device, vertices);
+	vertexBuffer = new VertexBuffer(physicalDevice, device, vertices);
 
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
