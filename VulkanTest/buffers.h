@@ -32,7 +32,7 @@ struct Vertex {
 		attributeDescription[0].offset = offsetof(Vertex, position);
 		attributeDescription[0].location = 0;
 		attributeDescription[1].binding = 0;
-		attributeDescription[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescription[1].offset = offsetof(Vertex, color);
 		attributeDescription[1].location = 1;
 		return attributeDescription;

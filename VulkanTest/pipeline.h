@@ -28,6 +28,8 @@ private:
 	RenderPass * m_renderPass;
 	Shaders * m_shaders;
 	SwapChain * m_swapChain;
+	std::vector<VkVertexInputAttributeDescription> attributeDescription;
+	VkVertexInputBindingDescription bindingDescription;
 };
 
 Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
@@ -37,8 +39,8 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 	VkPipelineShaderStageCreateInfo pShaderStage[] = { vertexShaderInfo, fragmentShaderInfo };
 	pipelineStages.pShaderStage = pShaderStage;
 
-	auto attributeDescription = Vertex::getAttributeDescription();
-	auto bindingDescription = Vertex::getBindingDescription();
+	attributeDescription = Vertex::getAttributeDescription();
+	bindingDescription = Vertex::getBindingDescription();
 	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo(attributeDescription, bindingDescription);
 	pipelineStages.pipelineVertexInput = pipelineVertexInput;
 
