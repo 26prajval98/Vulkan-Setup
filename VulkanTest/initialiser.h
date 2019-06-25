@@ -144,13 +144,13 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkPipelineVertexInputStateCreateInfo createPipelineVertexInputStateInfo() {
+	VkPipelineVertexInputStateCreateInfo createPipelineVertexInputStateInfo(std::vector<VkVertexInputAttributeDescription>& attributeDescription, VkVertexInputBindingDescription& bindingDescription) {
 		VkPipelineVertexInputStateCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		createInfo.vertexBindingDescriptionCount = 0;
-		createInfo.pVertexBindingDescriptions = nullptr; // Optional
-		createInfo.vertexAttributeDescriptionCount = 0;
-		createInfo.pVertexAttributeDescriptions = nullptr; // Optional
+		createInfo.vertexBindingDescriptionCount = 1;
+		createInfo.pVertexBindingDescriptions = &bindingDescription; // Optional
+		createInfo.vertexAttributeDescriptionCount = U(attributeDescription.size());
+		createInfo.pVertexAttributeDescriptions = attributeDescription.data(); // Optional
 		return createInfo;
 	}
 
@@ -337,6 +337,23 @@ namespace initialiser {
 		createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		// create fences in signaled state
 		createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		return createInfo;
+	}
+
+	VkBufferCreateInfo createVertexBufferInfo(uint32_t vertexBufferSize) {
+		VkBufferCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		createInfo.size = vertexBufferSize;
+		createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		return createInfo;
+	}
+
+	VkMemoryAllocateInfo createMemoryAllocateInfo(VkDeviceSize allocationSize, uint32_t memoryTypeIndex) {
+		VkMemoryAllocateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		createInfo.allocationSize = allocationSize;
+		createInfo.memoryTypeIndex = memoryTypeIndex;
 		return createInfo;
 	}
 }

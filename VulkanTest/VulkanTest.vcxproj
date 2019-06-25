@@ -177,6 +177,7 @@
     <ClInclude Include="semaphores.h" />
     <ClInclude Include="shaders.h" />
     <ClInclude Include="swapchain.h" />
+    <ClInclude Include="buffers.h" />
     <ClInclude Include="window.h" />
     <ClInclude Include="windowsurface.h" />
   </ItemGroup>

@@ -1,5 +1,6 @@
 //#include "Header.h"
 
+#include "buffers.h"
 #include "draw.h"
 #include "defines.h"
 #include "device.h"
@@ -28,6 +29,7 @@ Pipeline * pipeline;
 FrameBuffer * frameBuffer;
 Semaphore * semaphore;
 Draw * draw;
+VertexBuffer * vertexBuffer;
 
 int main() {
 	window = new Window();
@@ -44,7 +46,15 @@ int main() {
 	shaders = new Shaders(device);
 
 	renderPass = new RenderPass(device, swapChain);
-	
+
+	auto vertices = std::vector<Vertex>({
+		{{0.0, -0.5}, {1.0, 0.0, 0.0}},
+		{{0.5, 0.5}, {1.0, 0.0, 0.0}},
+		{{0.5, -0.5}, {1.0, 0.0, 0.0}},
+	});
+
+	//vertexBuffer = new VertexBuffer(physicalDevice, device, vertices);
+
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
 	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
@@ -59,16 +69,17 @@ int main() {
 
 	// vkBeginCommandBuffer will always reset the command buffer
 
-	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline());
+	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline(), vertexBuffer, 0, vertexBuffer->getNoVertices());
 
 	draw = new Draw(window, device, swapChain, semaphore, commands);
 
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
-	
+
 	delete(semaphore);
 	delete(frameBuffer);
 	delete(pipeline);
 	delete(renderPass);
+	delete(vertexBuffer);
 	delete(shaders);
 	delete(swapChain);
 	delete(device);

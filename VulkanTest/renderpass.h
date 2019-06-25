@@ -5,6 +5,7 @@
 #include "device.h"
 #include "initialiser.h"
 #include "swapchain.h"
+//#include "buffers.h"
 
 class RenderPass
 {
@@ -16,7 +17,7 @@ public:
 		return m_renderPass;
 	}
 
-	void command(std::vector<VkCommandBuffer> &commandBuffer, std::vector<VkFramebuffer> frameBuffer, VkPipeline graphicsPipeline) {
+	void command(std::vector<VkCommandBuffer> &commandBuffer, std::vector<VkFramebuffer> frameBuffer, VkPipeline graphicsPipeline, VertexBuffer * vertexBuffer, VkDeviceSize offset, uint32_t verticesCount) {
 		unsigned int i = 0;
 		for (auto& cb : commandBuffer) {
 			VkClearValue clearColor = { 0.0f, 0.8f, 0.0f, 1.0f };
@@ -31,8 +32,11 @@ public:
 			// VK_PIPELINE_BIND_POINT_GRAPHICS is graphics and 1 for compute
 			
 				vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+				VkBuffer vertexBuffers[] = { vertexBuffer->getVertexBuffer() };
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
 				// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
-				vkCmdDraw(cb, 3, 1, 0, 0);
+				vkCmdDraw(cb, verticesCount, 1, 0, 0);
 			
 			vkCmdEndRenderPass(cb);
 			ASSERT(vkEndCommandBuffer(cb),"Failed to record commands");

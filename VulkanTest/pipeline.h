@@ -6,6 +6,7 @@
 #include "shaders.h"
 #include "swapchain.h"
 #include "renderpass.h"
+#include "buffers.h"
 
 class Pipeline
 {
@@ -36,7 +37,9 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 	VkPipelineShaderStageCreateInfo pShaderStage[] = { vertexShaderInfo, fragmentShaderInfo };
 	pipelineStages.pShaderStage = pShaderStage;
 
-	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo();
+	auto attributeDescription = Vertex::getAttributeDescription();
+	auto bindingDescription = Vertex::getBindingDescription();
+	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo(attributeDescription, bindingDescription);
 	pipelineStages.pipelineVertexInput = pipelineVertexInput;
 
 	auto pipelineInputAssemblyInfo = initialiser::createPipelineInputAssemblyInfo();
