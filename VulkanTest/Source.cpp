@@ -51,13 +51,9 @@ int main() {
 
 	renderPass = new RenderPass(device, swapChain);
 
-	auto bindingDescription = Vertex::getBindingDescription();
-
-	auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
 	vertexBuffer = new VertexBuffer(physicalDevice, device, vertices);
 
-	pipeline = new Pipeline(device, renderPass, shaders, swapChain, attributeDescriptions, bindingDescription);
+	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
 	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
 

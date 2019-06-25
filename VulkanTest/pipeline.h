@@ -11,7 +11,7 @@
 class Pipeline
 {
 public:
-	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain, std::array<VkVertexInputAttributeDescription, 2>&attributeDescription, VkVertexInputBindingDescription &bindingDesciption);
+	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain);
 	~Pipeline();
 
 	VkPipeline getGraphicsPipeline() {
@@ -30,13 +30,15 @@ private:
 	SwapChain * m_swapChain;
 };
 
-Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain, std::array<VkVertexInputAttributeDescription, 2>&attributeDescription, VkVertexInputBindingDescription &bindingDesciption) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
+Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
 {
 	VkPipelineShaderStageCreateInfo vertexShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getVertexShaderModule(), VK_SHADER_STAGE_VERTEX_BIT);
 	VkPipelineShaderStageCreateInfo fragmentShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getFragmentShaderModule(), VK_SHADER_STAGE_FRAGMENT_BIT);
 	VkPipelineShaderStageCreateInfo pShaderStage[] = { vertexShaderInfo, fragmentShaderInfo };
 	pipelineStages.pShaderStage = pShaderStage;
 
+	auto attributeDescription = Vertex::getAttributeDescriptions();
+	auto bindingDesciption = Vertex::getBindingDescription();
 	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo(attributeDescription, bindingDesciption);
 	pipelineStages.pipelineVertexInput = pipelineVertexInput;
 

@@ -144,7 +144,7 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkPipelineVertexInputStateCreateInfo createPipelineVertexInputStateInfo(std::array<VkVertexInputAttributeDescription, 2>& attributeDescription, VkVertexInputBindingDescription& bindingDescription) {
+	VkPipelineVertexInputStateCreateInfo createPipelineVertexInputStateInfo(std::vector<VkVertexInputAttributeDescription>& attributeDescription, VkVertexInputBindingDescription& bindingDescription) {
 		VkPipelineVertexInputStateCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		createInfo.vertexBindingDescriptionCount = 1;
