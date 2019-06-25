@@ -1,7 +1,5 @@
 #pragma once
 
-#include "glm/glm.hpp"
-
 #include "Header.h"
 #include "defines.h"
 #include "device.h"
@@ -61,6 +59,10 @@ public:
 
 	VkBuffer getVertexBuffer() {
 		return m_vertexBuffer;
+	}
+
+	VkBuffer * pGetVertexBuffer() {
+		return &m_vertexBuffer;
 	}
 
 	uint32_t getNoVertices() {

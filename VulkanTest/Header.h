@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <algorithm> 
 #include <fstream>
+#include <array>
+#include "glm/glm.hpp"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;

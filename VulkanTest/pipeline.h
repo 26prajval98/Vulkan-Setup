@@ -6,12 +6,12 @@
 #include "shaders.h"
 #include "swapchain.h"
 #include "renderpass.h"
-#include "buffers.h"
+//#include "buffers.h"
 
 class Pipeline
 {
 public:
-	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain);
+	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain, std::array<VkVertexInputAttributeDescription, 2>&attributeDescription, VkVertexInputBindingDescription &bindingDesciption);
 	~Pipeline();
 
 	VkPipeline getGraphicsPipeline() {
@@ -28,20 +28,18 @@ private:
 	RenderPass * m_renderPass;
 	Shaders * m_shaders;
 	SwapChain * m_swapChain;
-	std::vector<VkVertexInputAttributeDescription> attributeDescription;
-	VkVertexInputBindingDescription bindingDescription;
+	//std::vector<VkVertexInputAttributeDescription> attributeDescription;
+	//VkVertexInputBindingDescription bindingDescription;
 };
 
-Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
+Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain, std::array<VkVertexInputAttributeDescription, 2>&attributeDescription, VkVertexInputBindingDescription &bindingDesciption) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
 {
 	VkPipelineShaderStageCreateInfo vertexShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getVertexShaderModule(), VK_SHADER_STAGE_VERTEX_BIT);
 	VkPipelineShaderStageCreateInfo fragmentShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getFragmentShaderModule(), VK_SHADER_STAGE_FRAGMENT_BIT);
 	VkPipelineShaderStageCreateInfo pShaderStage[] = { vertexShaderInfo, fragmentShaderInfo };
 	pipelineStages.pShaderStage = pShaderStage;
 
-	attributeDescription = Vertex::getAttributeDescription();
-	bindingDescription = Vertex::getBindingDescription();
-	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo(attributeDescription, bindingDescription);
+	auto pipelineVertexInput = initialiser::createPipelineVertexInputStateInfo(attributeDescription, bindingDesciption);
 	pipelineStages.pipelineVertexInput = pipelineVertexInput;
 
 	auto pipelineInputAssemblyInfo = initialiser::createPipelineInputAssemblyInfo();
