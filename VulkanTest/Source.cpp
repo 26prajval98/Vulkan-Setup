@@ -30,9 +30,9 @@ Draw * draw;
 VertexBuffer * vertexBuffer;
 
 const std::vector<Vertex> vertices = {
-	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+	{{0.0f, -0.5f}, {1.0f, 1.0f, .0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 };
 
 int main() {
@@ -71,9 +71,7 @@ int main() {
 
 	// vkBeginCommandBuffer will always reset the command buffer
 
-	auto t = vertexBuffer->getNoVertices();
-
-	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline(), vertexBuffer->pGetVertexBuffer(), 0, t);
+	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline(), vertexBuffer->pGetVertexBuffer(), 0, vertexBuffer->getNoVertices());
 	
 	draw = new Draw(window, device, swapChain, semaphore, commands);
 

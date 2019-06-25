@@ -50,9 +50,68 @@ uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropert
 	throw std::runtime_error("Suitable memory type not found");
 }
 
-class VertexBuffer
+class Buffer
 {
 public:
+	Buffer(PhysicalDevice * physicalDevice, Device * device);
+	~Buffer();
+	void virtual isBuffer() = 0;
+
+protected:
+	PhysicalDevice * m_physicalDevice;
+	Device * m_device;
+
+	VkBuffer m_buffer;
+	VkDeviceMemory m_bufferMemory;
+
+	VkBuffer getBuffer() {
+		return m_buffer;
+	}
+
+	VkBuffer * pGetBuffer() {
+		return &m_buffer;
+	}
+
+	void allocateAndMapBuffer(size_t bufferSize, void * bufferData) {
+		void * m_mappedData;
+		VkMemoryRequirements memoryRequirements;
+		vkGetBufferMemoryRequirements(m_device->getDevice(), m_buffer, &memoryRequirements);
+
+		auto createInfo = initialiser::createMemoryAllocateInfo(memoryRequirements.size, findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_physicalDevice));
+		ASSERT(vkAllocateMemory(m_device->getDevice(), &createInfo, nullptr, &m_bufferMemory), "Unable to allocate buffer memory");
+
+		// Memory offset is 0
+		vkBindBufferMemory(m_device->getDevice(), m_buffer, m_bufferMemory, 0);
+
+		vkMapMemory(m_device->getDevice(), m_bufferMemory, 0, bufferSize, 0, &m_mappedData);
+		memcpy(m_mappedData, bufferData, static_cast<size_t>(bufferSize));
+		vkUnmapMemory(m_device->getDevice(), m_bufferMemory);
+	}
+
+	void createBufferMemory(size_t bufferSize, void * verticesData) {
+		auto createInfo = initialiser::createBufferInfo(bufferSize);
+		ASSERT(vkCreateBuffer(m_device->getDevice(), &createInfo, nullptr, &m_buffer), "Unable to create vertex buffer");
+		allocateAndMapBuffer(bufferSize, verticesData);
+	}
+
+private:
+
+};
+
+Buffer::Buffer(PhysicalDevice * physicalDevice, Device * device) : m_physicalDevice(physicalDevice), m_device(device)
+{
+}
+
+Buffer::~Buffer(){
+	vkDestroyBuffer(m_device->getDevice(), m_buffer, nullptr);
+	vkFreeMemory(m_device->getDevice(), m_bufferMemory, nullptr);
+}
+
+class VertexBuffer : private Buffer
+{
+public:
+	void virtual isBuffer() {};
+
 	VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices);
 	~VertexBuffer();
 	void setVertices(std::vector<Vertex>& vertices) {
@@ -60,11 +119,11 @@ public:
 	}
 
 	VkBuffer getVertexBuffer() {
-		return m_vertexBuffer;
+		return getBuffer();
 	}
 
 	VkBuffer * pGetVertexBuffer() {
-		return &m_vertexBuffer;
+		return pGetBuffer();
 	}
 
 	uint32_t getNoVertices() {
@@ -72,54 +131,16 @@ public:
 	}
 
 private:
-	PhysicalDevice * m_physicalDevice;
-	Device * m_device;
-
 	std::vector<Vertex> m_vertices;
-	VkBuffer m_vertexBuffer;
-	VkDeviceMemory m_vertexBufferMemory;
 	void * m_mappedData;
-
-	void allocateAndMapBuffer(uint32_t vertexBufferSize) {
-		void * m_mappedData;
-		VkMemoryRequirements memoryRequirements;
-		vkGetBufferMemoryRequirements(m_device->getDevice(), m_vertexBuffer, &memoryRequirements);
-
-		auto createInfo_1 = initialiser::createMemoryAllocateInfo(memoryRequirements.size, findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_physicalDevice));
-		ASSERT(vkAllocateMemory(m_device->getDevice(), &createInfo_1, nullptr, &m_vertexBufferMemory), "Unable to allocate vertex buffer memory");
-
-		// Memory offset is 0
-		vkBindBufferMemory(m_device->getDevice(), m_vertexBuffer, m_vertexBufferMemory, 0);
-
-		vkMapMemory(m_device->getDevice(), m_vertexBufferMemory, 0, vertexBufferSize, 0, &m_mappedData);
-		memcpy(m_mappedData, m_vertices.data(), static_cast<size_t>(vertexBufferSize));
-		vkUnmapMemory(m_device->getDevice(), m_vertexBufferMemory);
-	}
 };
 
-VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : m_physicalDevice(physicalDevice), m_device(device) {
+VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : Buffer(physicalDevice, device) {
 	setVertices(vertices);
-	uint32_t vertexBufferSize = sizeof(m_vertices[0]) * m_vertices.size();
-	auto createInfo_0 = initialiser::createVertexBufferInfo(vertexBufferSize);
-	ASSERT(vkCreateBuffer(m_device->getDevice(), &createInfo_0, nullptr, &m_vertexBuffer), "Unable to create vertex buffer");
-
-	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(m_device->getDevice(), m_vertexBuffer, &memoryRequirements);
-
-	auto createInfo_1 = initialiser::createMemoryAllocateInfo(memoryRequirements.size, findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_physicalDevice));
-	ASSERT(vkAllocateMemory(m_device->getDevice(), &createInfo_1, nullptr, &m_vertexBufferMemory), "Unable to allocate vertex buffer memory");
-
-	// Memory offset is 0
-	vkBindBufferMemory(m_device->getDevice(), m_vertexBuffer, m_vertexBufferMemory, 0);
-
-	vkMapMemory(m_device->getDevice(), m_vertexBufferMemory, 0, vertexBufferSize, 0, &m_mappedData);
-	memcpy(m_mappedData, m_vertices.data(), (size_t)(vertexBufferSize));
-	vkUnmapMemory(m_device->getDevice(), m_vertexBufferMemory);
-
-	//allocateAndMapBuffer(vertexBufferSize);
+	size_t bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
+	createBufferMemory(bufferSize, vertices.data());
 }
 
 VertexBuffer::~VertexBuffer() {
-	vkDestroyBuffer(m_device->getDevice(), m_vertexBuffer, nullptr);
-	vkFreeMemory(m_device->getDevice(), m_vertexBufferMemory, nullptr);
+
 }

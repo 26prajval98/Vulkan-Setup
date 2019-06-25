@@ -20,7 +20,7 @@ public:
 	void command(std::vector<VkCommandBuffer> &commandBuffer, std::vector<VkFramebuffer> frameBuffer, VkPipeline graphicsPipeline, VkBuffer * vertexBuffer, VkDeviceSize offset, uint32_t verticesCount) {
 		unsigned int i = 0;
 		for (auto& cb : commandBuffer) {
-			VkClearValue clearColor = { 0.0f, 0.8f, 0.0f, 1.0f };
+			VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 			auto createInfo_0 = initialiser::createCommandBeginInfo();
 			ASSERT(vkBeginCommandBuffer(cb, &createInfo_0), "Command Buffer unable to begin");

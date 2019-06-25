@@ -340,10 +340,10 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkBufferCreateInfo createVertexBufferInfo(size_t vertexBufferSize) {
+	VkBufferCreateInfo createBufferInfo(size_t bufferSize) {
 		VkBufferCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		createInfo.size = vertexBufferSize;
+		createInfo.size = bufferSize;
 		createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		return createInfo;
