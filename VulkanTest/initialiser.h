@@ -340,7 +340,7 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkBufferCreateInfo createVertexBufferInfo(uint32_t vertexBufferSize) {
+	VkBufferCreateInfo createVertexBufferInfo(size_t vertexBufferSize) {
 		VkBufferCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		createInfo.size = vertexBufferSize;

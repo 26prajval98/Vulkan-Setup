@@ -28,8 +28,6 @@ private:
 	RenderPass * m_renderPass;
 	Shaders * m_shaders;
 	SwapChain * m_swapChain;
-	//std::vector<VkVertexInputAttributeDescription> attributeDescription;
-	//VkVertexInputBindingDescription bindingDescription;
 };
 
 Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain, std::array<VkVertexInputAttributeDescription, 2>&attributeDescription, VkVertexInputBindingDescription &bindingDesciption) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)

@@ -22,18 +22,20 @@ struct Vertex {
 		return bindingDescription;
 	}
 
-	static std::vector<VkVertexInputAttributeDescription> getAttributeDescription() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(2);
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
 
-		attributeDescription[0].binding = 0;
-		attributeDescription[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescription[0].offset = offsetof(Vertex, position);
-		attributeDescription[0].location = 0;
-		attributeDescription[1].binding = 0;
-		attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[1].offset = offsetof(Vertex, color);
-		attributeDescription[1].location = 1;
-		return attributeDescription;
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, position);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+		return attributeDescriptions;
 	}
 };
 
@@ -51,7 +53,7 @@ uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropert
 class VertexBuffer
 {
 public:
-	VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex>& vertices);
+	VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices);
 	~VertexBuffer();
 	void setVertices(std::vector<Vertex>& vertices) {
 		m_vertices = std::vector<Vertex>(vertices);
@@ -72,13 +74,14 @@ public:
 private:
 	PhysicalDevice * m_physicalDevice;
 	Device * m_device;
-	void * m_mappedData;
 
 	std::vector<Vertex> m_vertices;
 	VkBuffer m_vertexBuffer;
 	VkDeviceMemory m_vertexBufferMemory;
+	void * m_mappedData;
 
 	void allocateAndMapBuffer(uint32_t vertexBufferSize) {
+		void * m_mappedData;
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(m_device->getDevice(), m_vertexBuffer, &memoryRequirements);
 
@@ -94,12 +97,12 @@ private:
 	}
 };
 
-VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex>& vertices) : m_physicalDevice(physicalDevice), m_device(device) {
+VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : m_physicalDevice(physicalDevice), m_device(device) {
 	setVertices(vertices);
 	uint32_t vertexBufferSize = sizeof(m_vertices[0]) * m_vertices.size();
 	auto createInfo_0 = initialiser::createVertexBufferInfo(vertexBufferSize);
 	ASSERT(vkCreateBuffer(m_device->getDevice(), &createInfo_0, nullptr, &m_vertexBuffer), "Unable to create vertex buffer");
-	
+
 	VkMemoryRequirements memoryRequirements;
 	vkGetBufferMemoryRequirements(m_device->getDevice(), m_vertexBuffer, &memoryRequirements);
 
