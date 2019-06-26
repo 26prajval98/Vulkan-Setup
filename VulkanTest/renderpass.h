@@ -7,6 +7,17 @@
 #include "swapchain.h"
 //#include "buffers.h"
 
+struct CommandDetails {
+	std::vector<VkCommandBuffer> * pCommandBuffer;
+	std::vector<VkFramebuffer> frameBuffer;
+	VkPipeline graphicsPipeline;
+	VkDeviceSize offset;
+	VkBuffer * pVertexBuffer;
+	VkBuffer indexBuffer;
+	uint32_t verticesCount;
+	uint32_t indicesCount;
+};
+
 class RenderPass
 {
 public:
@@ -17,28 +28,28 @@ public:
 		return m_renderPass;
 	}
 
-	void command(std::vector<VkCommandBuffer> &commandBuffer, std::vector<VkFramebuffer> frameBuffer, VkPipeline graphicsPipeline, VkBuffer * vertexBuffer, VkDeviceSize offset, uint32_t verticesCount) {
+	void command(CommandDetails &commandDetails) {
 		unsigned int i = 0;
-		for (auto& cb : commandBuffer) {
+		for (auto& cb : *(commandDetails.pCommandBuffer)) {
 			VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 			auto createInfo_0 = initialiser::createCommandBeginInfo();
 			ASSERT(vkBeginCommandBuffer(cb, &createInfo_0), "Command Buffer unable to begin");
+			auto createInfo_1 = initialiser::createRenderPassBeginInfo(commandDetails.frameBuffer[i], m_swapChain->getSwapChainExtent(), m_renderPass, clearColor);
 
-			auto createInfo_1 = initialiser::createRenderPassBeginInfo(frameBuffer[i], m_swapChain->getSwapChainExtent(), m_renderPass, clearColor);
-			
 			// VK_SUBPASS_CONTENTS_INLINE means execute from primary command buffet
 			vkCmdBeginRenderPass(cb, &createInfo_1, VK_SUBPASS_CONTENTS_INLINE);
 			// VK_PIPELINE_BIND_POINT_GRAPHICS is graphics and 1 for compute
-			
-				vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffer, offsets);
-				// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
-				vkCmdDraw(cb, verticesCount, 1, 0, 0);
-			
+
+			vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, commandDetails.graphicsPipeline);
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(cb, 0, 1, commandDetails.pVertexBuffer, offsets);
+			// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
+			vkCmdBindIndexBuffer(cb, commandDetails.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDraw(cb, commandDetails.verticesCount, 1, 0, 0);
+
 			vkCmdEndRenderPass(cb);
-			ASSERT(vkEndCommandBuffer(cb),"Failed to record commands");
+			ASSERT(vkEndCommandBuffer(cb), "Failed to record commands");
 			++i;
 		}
 	}
@@ -84,11 +95,11 @@ RenderPass::RenderPass(Device * device, SwapChain * swapChain) : m_device(device
 
 	/*
 		attachments : 1-2-3-4 (binding with renderpass)
-		attachment refs: 
+		attachment refs:
 			1-2- (binding with subpass_1)
 			3-	 (binding with subpass_2)
 			4-	 (binding with subpass_3)
-										
+
 	*/
 
 	// Create A Single subpass

@@ -340,11 +340,11 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkBufferCreateInfo createBufferInfo(size_t bufferSize) {
+	VkBufferCreateInfo createBufferInfo(size_t bufferSize, VkBufferUsageFlags usageFlags) {
 		VkBufferCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		createInfo.size = bufferSize;
-		createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		createInfo.usage = usageFlags;
 		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		return createInfo;
 	}

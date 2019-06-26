@@ -97,8 +97,8 @@ protected:
 		vkUnmapMemory(m_device->getDevice(), m_bufferMemory);
 	}
 
-	void createBufferMemory(size_t bufferSize, void * verticesData) {
-		auto createInfo = initialiser::createBufferInfo(bufferSize);
+	void createBufferMemory(size_t bufferSize, void * verticesData, VkBufferUsageFlags usageFlags) {
+		auto createInfo = initialiser::createBufferInfo(bufferSize, usageFlags);
 		ASSERT(vkCreateBuffer(m_device->getDevice(), &createInfo, nullptr, &m_buffer), "Unable to create vertex buffer");
 		allocateAndMapBuffer(bufferSize, verticesData);
 	}
@@ -146,7 +146,7 @@ private:
 VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : Buffer(physicalDevice, device) {
 	setVertices(vertices);
 	size_t bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
-	createBufferMemory(bufferSize, vertices.data());
+	createBufferMemory(bufferSize, vertices.data(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
 VertexBuffer::~VertexBuffer() {
@@ -179,7 +179,7 @@ private:
 IndexBuffer::IndexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<uint32_t> indices) : Buffer(physicalDevice, device), m_indices(indices)
 {
 	size_t bufferSize = sizeof(m_indices[0]) * m_indices.size();
-	createBufferMemory(bufferSize, indices.data());
+	createBufferMemory(bufferSize, indices.data(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
 IndexBuffer::~IndexBuffer()

@@ -72,16 +72,15 @@ int main() {
 
 	// vkBeginCommandBuffer will always reset the command buffer
 
-	CommandDetails * commandDetails = (CommandDetails *)malloc(sizeof(CommandDetails));
-	commandDetails->pVertexBuffer = (VkBuffer *)malloc(sizeof(VkBuffer));
-	commandDetails->commandBuffer = commands;
-	commandDetails->frameBuffer = frameBuffer->getFrameBuffer();
-	commandDetails->graphicsPipeline = pipeline->getGraphicsPipeline();
-	commandDetails->offset = 0;
-	commandDetails->pVertexBuffer = vertexBuffer->pGetVertexBuffer();
-	commandDetails->indexBuffer = indexBuffer->getIndexBuffer();
-	commandDetails->verticesCount = vertexBuffer->getNoVertices();
-	commandDetails->indicesCount = indexBuffer->getNoIndices();
+	CommandDetails commandDetails{};
+	commandDetails.pCommandBuffer = &commands;
+	commandDetails.frameBuffer = frameBuffer->getFrameBuffer();
+	commandDetails.graphicsPipeline = pipeline->getGraphicsPipeline();
+	commandDetails.offset = 0;
+	commandDetails.pVertexBuffer = vertexBuffer->pGetVertexBuffer();
+	commandDetails.indexBuffer = indexBuffer->getIndexBuffer();
+	commandDetails.verticesCount = vertexBuffer->getNoVertices();
+	commandDetails.indicesCount = indexBuffer->getNoIndices();
 
 	renderPass->command(commandDetails);
 
