@@ -46,7 +46,7 @@ public:
 			vkCmdBindVertexBuffers(cb, 0, 1, commandDetails.pVertexBuffer, offsets);
 			// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
 			vkCmdBindIndexBuffer(cb, commandDetails.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-			vkCmdDraw(cb, commandDetails.verticesCount, 1, 0, 0);
+			vkCmdDrawIndexed(cb, commandDetails.indicesCount, 1, 0, 0, 0);
 
 			vkCmdEndRenderPass(cb);
 			ASSERT(vkEndCommandBuffer(cb), "Failed to record commands");
