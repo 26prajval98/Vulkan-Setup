@@ -6,6 +6,13 @@
 #include "initialiser.h"
 #include "physicaldevice.h"
 
+enum BUFFER_TYPE {
+	VERTEX_BUFFER,
+	INDEX_BUFFER,
+	COMMAND_BUFFER,
+	DEPTH_STENCIL_BUFFER
+};
+
 struct Vertex {
 	glm::vec2 position;
 	glm::vec3 color;
@@ -57,7 +64,7 @@ class Buffer
 public:
 	Buffer(PhysicalDevice * physicalDevice, Device * device);
 	~Buffer();
-	void virtual isBuffer() = 0;
+	BUFFER_TYPE virtual type() = 0;
 
 protected:
 	PhysicalDevice * m_physicalDevice;
@@ -112,7 +119,7 @@ Buffer::~Buffer(){
 class VertexBuffer : private Buffer
 {
 public:
-	void virtual isBuffer() {};
+	BUFFER_TYPE virtual type() { return VERTEX_BUFFER; };
 
 	VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices);
 	~VertexBuffer();
@@ -134,7 +141,6 @@ public:
 
 private:
 	std::vector<Vertex> m_vertices;
-	void * m_mappedData;
 };
 
 VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : Buffer(physicalDevice, device) {
@@ -145,4 +151,37 @@ VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std
 
 VertexBuffer::~VertexBuffer() {
 
+}
+
+class IndexBuffer : private Buffer
+{
+public:
+	IndexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<uint32_t> indices);
+	~IndexBuffer();
+
+	BUFFER_TYPE type() { return INDEX_BUFFER; }
+
+	VkBuffer getIndexBuffer() {
+		return getBuffer();
+	}
+
+	VkBuffer * pGetIndexBuffer() {
+		return pGetBuffer();
+	}
+
+	uint32_t getNoIndices() {
+		return static_cast<uint32_t>(m_indices.size());
+	}
+private:
+	std::vector<uint32_t> m_indices;
+};
+
+IndexBuffer::IndexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<uint32_t> indices) : Buffer(physicalDevice, device), m_indices(indices)
+{
+	size_t bufferSize = sizeof(m_indices[0]) * m_indices.size();
+	createBufferMemory(bufferSize, indices.data());
+}
+
+IndexBuffer::~IndexBuffer()
+{
 }
