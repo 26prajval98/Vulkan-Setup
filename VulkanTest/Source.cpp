@@ -28,12 +28,15 @@ FrameBuffer * frameBuffer;
 Semaphore * semaphore;
 Draw * draw;
 VertexBuffer * vertexBuffer;
+IndexBuffer * indexBuffer;
 
 const std::vector<Vertex> vertices = {
 	{{0.0f, -0.5f}, {1.0f, 1.0f, .0f}},
 	{{0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
 	{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 };
+
+const std::vector<uint32_t> indices = { 0, 1, 2 };
 
 int main() {
 	window = new Window();
@@ -53,6 +56,8 @@ int main() {
 
 	vertexBuffer = new VertexBuffer(physicalDevice, device, vertices);
 
+	indexBuffer = new IndexBuffer(physicalDevice, device, indices);
+
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
 	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
@@ -67,8 +72,19 @@ int main() {
 
 	// vkBeginCommandBuffer will always reset the command buffer
 
-	renderPass->command(commands, frameBuffer->getFrameBuffer(), pipeline->getGraphicsPipeline(), vertexBuffer->pGetVertexBuffer(), 0, vertexBuffer->getNoVertices());
-	
+	CommandDetails * commandDetails = (CommandDetails *)malloc(sizeof(CommandDetails));
+	commandDetails->pVertexBuffer = (VkBuffer *)malloc(sizeof(VkBuffer));
+	commandDetails->commandBuffer = commands;
+	commandDetails->frameBuffer = frameBuffer->getFrameBuffer();
+	commandDetails->graphicsPipeline = pipeline->getGraphicsPipeline();
+	commandDetails->offset = 0;
+	commandDetails->pVertexBuffer = vertexBuffer->pGetVertexBuffer();
+	commandDetails->indexBuffer = indexBuffer->getIndexBuffer();
+	commandDetails->verticesCount = vertexBuffer->getNoVertices();
+	commandDetails->indicesCount = indexBuffer->getNoIndices();
+
+	renderPass->command(commandDetails);
+
 	draw = new Draw(window, device, swapChain, semaphore, commands);
 
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
@@ -77,6 +93,7 @@ int main() {
 	delete(frameBuffer);
 	delete(pipeline);
 	delete(renderPass);
+	delete(indexBuffer);
 	delete(vertexBuffer);
 	delete(shaders);
 	delete(swapChain);

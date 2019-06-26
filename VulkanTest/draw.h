@@ -22,8 +22,6 @@ private:
 	//bool x;
 
 	std::vector<VkCommandBuffer> m_commandBuffer;
-	//std::vector<VkSemaphore> m_waitSemaphore;
-	//std::vector<VkSemaphore> m_signalSemaphore;
 	VkSwapchainKHR m_pSwapChain[1];
 
 	void drawFrame() {
@@ -57,9 +55,6 @@ private:
 
 Draw::Draw(Window * window, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer) : m_window(window),
 m_device(device), m_swapChain(swapChain), m_semaphore(semaphore), m_currentFrameNumber(0), m_commandBuffer(commandBuffer) {
-
-	//m_waitSemaphore[0] = m_semaphore->getImageAvailableSemaphore();
-	//m_signalSemaphore[0] = m_semaphore->getRenderImageFinishedSemaphore();
 
 	m_pSwapChain[0] = { swapChain->getSwapChain() };
 	//x = false;
