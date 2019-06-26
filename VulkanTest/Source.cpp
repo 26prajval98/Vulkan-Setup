@@ -29,12 +29,14 @@ Semaphore * semaphore;
 Draw * draw;
 VertexBuffer * vertexBuffer;
 IndexBuffer * indexBuffer;
+UniformBuffers * uniformBuffers;
+//std::vector<UniformBuffer *>uniformBuffers;
 
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 };
 
 const std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 };
@@ -59,6 +61,13 @@ int main() {
 
 	indexBuffer = new IndexBuffer(physicalDevice, device, indices);
 
+	//for (uint32_t i = 0; i < swapChain->getImages().size(); ++i) {
+	//	auto p_uniformBuffer = new UniformBuffer(physicalDevice, device, swapChain);
+	//	uniformBuffers.push_back(p_uniformBuffer);
+	//}
+
+	uniformBuffers = new UniformBuffers(physicalDevice, device, swapChain);
+	
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
 	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
@@ -85,12 +94,13 @@ int main() {
 
 	renderPass->command(commandDetails);
 
-	draw = new Draw(window, device, swapChain, semaphore, commands);
+	draw = new Draw(window, physicalDevice, device, swapChain, semaphore, commands, uniformBuffers);
 
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
 
 	delete(semaphore);
 	delete(frameBuffer);
+	delete(uniformBuffers);
 	delete(pipeline);
 	delete(renderPass);
 	delete(indexBuffer);

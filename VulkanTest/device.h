@@ -72,7 +72,6 @@ private:
 
 		auto commandPoolInfo_1 = initialiser::createComputePoolInfo(m_physicalDevice->getQueueFamilyIndices().graphicIndices);
 		ASSERT(vkCreateCommandPool(m_device, &commandPoolInfo_1, nullptr, &m_commandPool[1]), "Unable to create command pool");
-
 	}
 };
 

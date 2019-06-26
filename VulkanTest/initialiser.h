@@ -228,11 +228,11 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkPipelineLayoutCreateInfo createPipelineLayoutInfo() {
+	VkPipelineLayoutCreateInfo createPipelineLayoutInfo(VkDescriptorSetLayout& descriptorSetLayout) {
 		VkPipelineLayoutCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		createInfo.setLayoutCount = 0; // Optional
-		createInfo.pSetLayouts = nullptr; // Optional
+		createInfo.setLayoutCount = 1; //sizeof(descriptorSetLayouts) / sizeof(VkDescriptorSetLayout); // Optional
+		createInfo.pSetLayouts = &descriptorSetLayout; // Optional
 		createInfo.pushConstantRangeCount = 0; // Optional
 		createInfo.pPushConstantRanges = nullptr; // Optional
 		return createInfo;
@@ -354,6 +354,14 @@ namespace initialiser {
 		createInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		createInfo.allocationSize = allocationSize;
 		createInfo.memoryTypeIndex = memoryTypeIndex;
+		return createInfo;
+	}
+
+	VkDescriptorSetLayoutCreateInfo createDescriptorSetLayoutInfo(VkDescriptorSetLayoutBinding * descriptorSetLayoutBindings) {
+		VkDescriptorSetLayoutCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		createInfo.bindingCount = sizeof(descriptorSetLayoutBindings) / sizeof(VkDescriptorSetLayoutBinding);
+		createInfo.pBindings = descriptorSetLayoutBindings;
 		return createInfo;
 	}
 }

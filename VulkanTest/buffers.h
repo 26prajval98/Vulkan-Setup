@@ -5,10 +5,12 @@
 #include "device.h"
 #include "initialiser.h"
 #include "physicaldevice.h"
+#include "swapchain.h"
 
 enum BUFFER_TYPE {
 	VERTEX_BUFFER,
 	INDEX_BUFFER,
+	UNIFORM_BUFFER,
 	COMMAND_BUFFER,
 	DEPTH_STENCIL_BUFFER
 };
@@ -48,6 +50,12 @@ struct Vertex {
 	}
 };
 
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+} ;
+
 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertyFlag, PhysicalDevice * physicalDevice) {
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice->getPhysicalDevice(), &memoryProperties);
@@ -81,26 +89,37 @@ protected:
 		return &m_buffer;
 	}
 
-	void allocateAndMapBuffer(size_t bufferSize, void * bufferData) {
+	void mapMemory(size_t bufferSize, void * bufferData) {
 		void * m_mappedData;
-		VkMemoryRequirements memoryRequirements;
-		vkGetBufferMemoryRequirements(m_device->getDevice(), m_buffer, &memoryRequirements);
-
-		auto createInfo = initialiser::createMemoryAllocateInfo(memoryRequirements.size, findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_physicalDevice));
-		ASSERT(vkAllocateMemory(m_device->getDevice(), &createInfo, nullptr, &m_bufferMemory), "Unable to allocate buffer memory");
-
-		// Memory offset is 0
-		vkBindBufferMemory(m_device->getDevice(), m_buffer, m_bufferMemory, 0);
-
 		vkMapMemory(m_device->getDevice(), m_bufferMemory, 0, bufferSize, 0, &m_mappedData);
 		memcpy(m_mappedData, bufferData, static_cast<size_t>(bufferSize));
 		vkUnmapMemory(m_device->getDevice(), m_bufferMemory);
 	}
 
-	void createBufferMemory(size_t bufferSize, void * verticesData, VkBufferUsageFlags usageFlags) {
+	void allocateMemory() {
+		VkMemoryRequirements memoryRequirements;
+		vkGetBufferMemoryRequirements(m_device->getDevice(), m_buffer, &memoryRequirements);
+		auto memoryType = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_physicalDevice);
+		auto createInfo_1 = initialiser::createMemoryAllocateInfo(memoryRequirements.size, memoryType);
+		ASSERT(vkAllocateMemory(m_device->getDevice(), &createInfo_1, nullptr, &m_bufferMemory), "Unable to allocate buffer memory");
+		// Memory offset is 0
+		vkBindBufferMemory(m_device->getDevice(), m_buffer, m_bufferMemory, 0);
+	}
+
+	void createBuffer(size_t bufferSize, VkBufferUsageFlags usageFlags) {
 		auto createInfo = initialiser::createBufferInfo(bufferSize, usageFlags);
 		ASSERT(vkCreateBuffer(m_device->getDevice(), &createInfo, nullptr, &m_buffer), "Unable to create vertex buffer");
-		allocateAndMapBuffer(bufferSize, verticesData);
+	}
+
+	void createBufferMemoryWithoutMap(size_t bufferSize, VkBufferUsageFlags usageFlags) {
+		createBuffer(bufferSize, usageFlags);
+		allocateMemory();
+	}
+
+	void createBufferMemory(size_t bufferSize, void * data, VkBufferUsageFlags usageFlags) {
+		createBuffer(bufferSize, usageFlags);
+		allocateMemory();
+		mapMemory(bufferSize, data);
 	}
 
 private:
@@ -145,7 +164,7 @@ private:
 
 VertexBuffer::VertexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<Vertex> vertices) : Buffer(physicalDevice, device) {
 	setVertices(vertices);
-	size_t bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
+	size_t bufferSize = sizeof(Vertex) * m_vertices.size();
 	createBufferMemory(bufferSize, vertices.data(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
@@ -178,10 +197,83 @@ private:
 
 IndexBuffer::IndexBuffer(PhysicalDevice * physicalDevice, Device * device, std::vector<uint32_t> indices) : Buffer(physicalDevice, device), m_indices(indices)
 {
-	size_t bufferSize = sizeof(m_indices[0]) * m_indices.size();
+	size_t bufferSize = sizeof(uint32_t) * m_indices.size();
 	createBufferMemory(bufferSize, indices.data(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
 IndexBuffer::~IndexBuffer()
 {
+}
+
+class UniformBuffer : private Buffer
+{
+public:
+	UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain);
+	~UniformBuffer();
+	
+	BUFFER_TYPE type() { return UNIFORM_BUFFER; }
+	void updateUniformBuffer() {
+		getUbo();
+		mapMemory(sizeof(UniformBufferObject), &m_uniformBuffer);
+	}
+
+private:
+	SwapChain * m_swapChain;
+	UniformBufferObject m_uniformBuffer;
+
+	void getUbo() {
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		
+		m_uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		m_uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		m_uniformBuffer.proj = glm::perspective(glm::radians(45.0f), m_swapChain->getSwapChainExtent().width / (float)m_swapChain->getSwapChainExtent().height, 0.1f, 10.0f);
+		m_uniformBuffer.proj[1][1] *= -1;
+	}
+
+};
+
+UniformBuffer::UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : Buffer(physicalDevice, device), m_swapChain(swapChain)
+{
+	size_t bufferSize = sizeof(UniformBufferObject);
+	createBufferMemoryWithoutMap(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+}
+
+UniformBuffer::~UniformBuffer()
+{
+}
+
+class UniformBuffers
+{
+public:
+	UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain);
+	~UniformBuffers();
+
+	void updateUniformBuffer(uint32_t index) {
+		m_uniformBuffers[index]->updateUniformBuffer();
+	}
+
+private:
+	PhysicalDevice * m_physicalDevice;
+	Device * m_device;
+	SwapChain * m_swapChain;
+	std::vector<UniformBuffer *> m_uniformBuffers;
+};
+
+UniformBuffers::UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : m_device(device), m_physicalDevice(physicalDevice), m_swapChain(swapChain), m_uniformBuffers({})
+{
+	for (uint32_t i = 0; i < m_swapChain->getImageViews().size(); i++) {
+		auto x = new UniformBuffer(m_physicalDevice, m_device, m_swapChain);
+		m_uniformBuffers.push_back(x);
+	}
+}
+
+UniformBuffers::~UniformBuffers()
+{
+	for (auto& m_uniformBuffer : m_uniformBuffers) {
+		delete(m_uniformBuffer);
+	}
 }

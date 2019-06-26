@@ -10,7 +10,7 @@
 class Draw
 {
 public:
-	Draw(Window * window, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer);
+	Draw(Window * window, PhysicalDevice* physicalDevice, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer, UniformBuffers * uniformBuffers);
 	~Draw();
 
 private:
@@ -19,6 +19,8 @@ private:
 	SwapChain * m_swapChain;
 	Semaphore * m_semaphore;
 	uint32_t m_currentFrameNumber;
+	UniformBuffers * m_uniformBuffers;
+	PhysicalDevice * m_physicalDevice;
 	//bool x;
 
 	std::vector<VkCommandBuffer> m_commandBuffer;
@@ -37,6 +39,11 @@ private:
 
 		// If you get vk_error_validation_failed_ext it is due to not getting to know the semaphores properly
 		vkAcquireNextImageKHR(m_device->getDevice(), m_swapChain->getSwapChain(), std::numeric_limits<uint64_t>::max(), m_semaphore->getImageAvailableSemaphore(m_currentFrameNumber), VK_NULL_HANDLE, &imageIndex);
+		
+		//delete(m_uniformBuffers[imageIndex]);
+		//m_uniformBuffers[imageIndex] = new UniformBuffer(m_physicalDevice, m_device, m_swapChain);
+		m_uniformBuffers->updateUniformBuffer(imageIndex);
+		
 		// When should wait semaphore be used
 		VkPipelineStageFlags pipelineWaitStageFlags[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		VkSubmitInfo createInfo_0 = initialiser::createSubmitInfo(m_semaphore->pGetImageAvailableSemaphore(m_currentFrameNumber), m_semaphore->pGetRenderImageFinishedSemaphore(m_currentFrameNumber), pipelineWaitStageFlags, m_commandBuffer[imageIndex]);
@@ -53,8 +60,8 @@ private:
 	};
 };
 
-Draw::Draw(Window * window, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer) : m_window(window),
-m_device(device), m_swapChain(swapChain), m_semaphore(semaphore), m_currentFrameNumber(0), m_commandBuffer(commandBuffer) {
+Draw::Draw(Window * window, PhysicalDevice* physicalDevice, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer, UniformBuffers * uniformBuffers) : m_window(window),
+m_device(device), m_swapChain(swapChain), m_semaphore(semaphore), m_currentFrameNumber(0), m_commandBuffer(commandBuffer), m_uniformBuffers(uniformBuffers), m_physicalDevice(physicalDevice){
 
 	m_pSwapChain[0] = { swapChain->getSwapChain() };
 	//x = false;

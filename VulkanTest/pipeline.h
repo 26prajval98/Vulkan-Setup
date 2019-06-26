@@ -19,6 +19,7 @@ public:
 	}
 
 private:
+	VkDescriptorSetLayout m_descriptorSetLayout;
 	initialiser::PipelineStages pipelineStages = {};
 	VkPipelineLayout m_pipelineLayout;
 	VkPipeline m_pipeline;
@@ -28,10 +29,27 @@ private:
 	RenderPass * m_renderPass;
 	Shaders * m_shaders;
 	SwapChain * m_swapChain;
+
+	void createDescriptorSetLayout() {
+		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+		uboLayoutBinding.binding = 0;
+		uboLayoutBinding.descriptorCount = 1;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.pImmutableSamplers = nullptr;
+		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+		VkDescriptorSetLayoutBinding decriptorSetLayoutBindings[] = { uboLayoutBinding };
+
+		VkDescriptorSetLayoutCreateInfo createInfo = initialiser::createDescriptorSetLayoutInfo(decriptorSetLayoutBindings);
+
+		ASSERT(vkCreateDescriptorSetLayout(m_device->getDevice(), &createInfo, nullptr, &m_descriptorSetLayout), "Unable to create descriptor info");
+	}
 };
 
 Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain) : m_shaders(shaders), m_renderPass(renderPass), m_device(device), m_swapChain(swapChain)
 {
+	createDescriptorSetLayout();
+
 	VkPipelineShaderStageCreateInfo vertexShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getVertexShaderModule(), VK_SHADER_STAGE_VERTEX_BIT);
 	VkPipelineShaderStageCreateInfo fragmentShaderInfo = initialiser::createPipelineShaderStageInfo(m_shaders->getFragmentShaderModule(), VK_SHADER_STAGE_FRAGMENT_BIT);
 	VkPipelineShaderStageCreateInfo pShaderStage[] = { vertexShaderInfo, fragmentShaderInfo };
@@ -86,9 +104,9 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 	auto pipelineDynamicInfo = initialiser::createPipelineDynamicStateInfo(pDynamicStates);
 	pipelineStages.pipelineDynamicInfo = pipelineDynamicInfo;
 
-	auto createInfo_0 = initialiser::createPipelineLayoutInfo();
+	auto createInfo_0 = initialiser::createPipelineLayoutInfo(m_descriptorSetLayout);
 	ASSERT(vkCreatePipelineLayout(device->getDevice(), &createInfo_0, nullptr, &m_pipelineLayout), "Unable to create pipeline layout");
-	
+
 	m_pipelineLayoutInfos = {};
 	// 0th index in subpass of renderpass (subpassIndex)
 	auto createInfo_1 = initialiser::createGrpahicsPipilineInfo(pipelineStages, m_pipelineLayout, renderPass->getRenderPass(), 0);
@@ -98,6 +116,7 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 
 Pipeline::~Pipeline()
 {
+	vkDestroyDescriptorSetLayout(m_device->getDevice(), m_descriptorSetLayout, nullptr);
 	vkDestroyPipeline(m_device->getDevice(), m_pipeline, nullptr);
 	vkDestroyPipelineLayout(m_device->getDevice(), m_pipelineLayout, nullptr);
 }
