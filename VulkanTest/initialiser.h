@@ -61,7 +61,7 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkCommandPoolCreateInfo createComputePoolInfo(const uint32_t& queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
+	VkCommandPoolCreateInfo createComputecreateInfo(const uint32_t& queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
 		VkCommandPoolCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		createInfo.flags = flags;
@@ -310,7 +310,7 @@ namespace initialiser {
 		VkSubmitInfo createInfo = {};
 
 		createInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		createInfo.waitSemaphoreCount = sizeof(waitSemaphores)/sizeof(VkSemaphore);
+		createInfo.waitSemaphoreCount = sizeof(waitSemaphores) / sizeof(VkSemaphore);
 		createInfo.pWaitSemaphores = waitSemaphores;
 		createInfo.pWaitDstStageMask = waitStages;
 		createInfo.commandBufferCount = 1;
@@ -362,6 +362,24 @@ namespace initialiser {
 		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		createInfo.bindingCount = sizeof(descriptorSetLayoutBindings) / sizeof(VkDescriptorSetLayoutBinding);
 		createInfo.pBindings = descriptorSetLayoutBindings;
+		return createInfo;
+	}
+
+	VkDescriptorPoolCreateInfo createDescriptorPoolInfo(VkDescriptorPoolSize &poolSize, uint32_t maxSets) {
+		VkDescriptorPoolCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		createInfo.poolSizeCount = 1;
+		createInfo.pPoolSizes = &poolSize;
+		createInfo.maxSets = maxSets;
+		return createInfo;
+	}
+
+	VkDescriptorSetAllocateInfo createDescriptorSetAllocateInfo(VkDescriptorPool descriptorPool, std::vector<VkDescriptorSetLayout>& descriptorSetLayout, uint32_t count) {
+		VkDescriptorSetAllocateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		createInfo.descriptorPool = descriptorPool;
+		createInfo.descriptorSetCount = count;
+		createInfo.pSetLayouts = descriptorSetLayout.data();
 		return createInfo;
 	}
 }

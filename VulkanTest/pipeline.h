@@ -18,6 +18,10 @@ public:
 		return m_pipeline;
 	}
 
+	VkDescriptorSetLayout getDescriptorSetLayout() {
+		return m_descriptorSetLayout;
+	}
+
 private:
 	VkDescriptorSetLayout m_descriptorSetLayout;
 	initialiser::PipelineStages pipelineStages = {};

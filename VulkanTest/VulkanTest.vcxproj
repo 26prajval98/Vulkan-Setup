@@ -163,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
+    <ClInclude Include="descriptors.h" />
     <ClInclude Include="draw.h" />
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="Header.h" />
