@@ -61,7 +61,7 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkCommandPoolCreateInfo createComputecreateInfo(const uint32_t& queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
+	VkCommandPoolCreateInfo createComputePoolInfo(const uint32_t& queueFamilyIndex, VkCommandPoolCreateFlags flags = 0) {
 		VkCommandPoolCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		createInfo.flags = flags;
@@ -374,11 +374,11 @@ namespace initialiser {
 		return createInfo;
 	}
 
-	VkDescriptorSetAllocateInfo createDescriptorSetAllocateInfo(VkDescriptorPool descriptorPool, std::vector<VkDescriptorSetLayout>& descriptorSetLayout, uint32_t count) {
+	VkDescriptorSetAllocateInfo createDescriptorSetAllocateInfo(VkDescriptorPool descriptorPool, std::vector<VkDescriptorSetLayout>& descriptorSetLayout, size_t count) {
 		VkDescriptorSetAllocateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		createInfo.descriptorPool = descriptorPool;
-		createInfo.descriptorSetCount = count;
+		createInfo.descriptorSetCount = U(count);
 		createInfo.pSetLayouts = descriptorSetLayout.data();
 		return createInfo;
 	}
