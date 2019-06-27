@@ -205,6 +205,51 @@ IndexBuffer::~IndexBuffer()
 {
 }
 
+class UniformBuffer : private Buffer
+{
+public:
+	UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain);
+	~UniformBuffer();
+	
+	BUFFER_TYPE type() { return UNIFORM_BUFFER; }
+	void updateUniformBuffer() {
+		getUbo();
+		mapMemory(sizeof(UniformBufferObject), &m_uniformBuffer);
+	}
+
+	VkBuffer getUniformBuffer() {
+		return getBuffer();
+	}
+
+private:
+	SwapChain * m_swapChain;
+	UniformBufferObject m_uniformBuffer;
+
+	void getUbo() {
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		
+		m_uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		m_uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		m_uniformBuffer.proj = glm::perspective(glm::radians(45.0f), m_swapChain->getSwapChainExtent().width / (float)m_swapChain->getSwapChainExtent().height, 0.1f, 10.0f);
+		m_uniformBuffer.proj[1][1] *= -1;
+	}
+
+};
+
+UniformBuffer::UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : Buffer(physicalDevice, device), m_swapChain(swapChain)
+{
+	size_t bufferSize = sizeof(UniformBufferObject);
+	createBufferMemoryWithoutMap(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+}
+
+UniformBuffer::~UniformBuffer()
+{
+}
+
 class UniformBuffers
 {
 public:
@@ -212,162 +257,31 @@ public:
 	~UniformBuffers();
 
 	VkBuffer getBuffer(uint32_t index) {
-		return uniformBuffers[index];
+		return m_uniformBuffers[index]->getUniformBuffer();
 	}
 
-	void updateUniformBuffer(uint32_t currentImage) {
-		auto device = m_device->getDevice();
-
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		UniformBufferObject ubo = {};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), m_swapChain->getSwapChainExtent().width / (float)m_swapChain->getSwapChainExtent().height, 0.1f, 10.0f);
-		ubo.proj[1][1] *= -1;
-
-		void* data;
-		ASSERT(vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data), "Unable to Map Memory");
-		memcpy(data, &ubo, sizeof(ubo));
-		vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
-	}
-
-	void createBuffer(VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create buffer!");
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties, m_physicalDevice);
-
-		if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate buffer memory!");
-		}
-
-		vkBindBufferMemory(device, buffer, bufferMemory, 0);
+	void updateUniformBuffer(uint32_t index) {
+		m_uniformBuffers[index]->updateUniformBuffer();
 	}
 
 private:
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBuffersMemory;
-
-	Device * m_device;
 	PhysicalDevice * m_physicalDevice;
+	Device * m_device;
 	SwapChain * m_swapChain;
+	std::vector<UniformBuffer *> m_uniformBuffers;
 };
 
-UniformBuffers::UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : m_device(device), m_physicalDevice(physicalDevice), m_swapChain(swapChain)
+UniformBuffers::UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : m_device(device), m_physicalDevice(physicalDevice), m_swapChain(swapChain), m_uniformBuffers({})
 {
-	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-	uniformBuffers.resize(m_swapChain->getImages().size());
-	uniformBuffersMemory.resize(m_swapChain->getImages().size());
-
-	for (size_t i = 0; i < m_swapChain->getImages().size(); i++) {
-		createBuffer(m_device->getDevice(), bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+	for (uint32_t i = 0; i < m_swapChain->getImageViews().size(); i++) {
+		auto x = new UniformBuffer(m_physicalDevice, m_device, m_swapChain);
+		m_uniformBuffers.push_back(x);
 	}
 }
 
 UniformBuffers::~UniformBuffers()
 {
-	for (size_t i = 0; i < m_swapChain->getImages().size(); i++) {
-		vkDestroyBuffer(m_device->getDevice(), uniformBuffers[i], nullptr);
-		vkFreeMemory(m_device->getDevice(), uniformBuffersMemory[i], nullptr);
+	for (auto& m_uniformBuffer : m_uniformBuffers) {
+		delete(m_uniformBuffer);
 	}
 }
-
-//
-//class UniformBuffer : private Buffer
-//{
-//public:
-//	UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain);
-//	~UniformBuffer();
-//	
-//	BUFFER_TYPE type() { return UNIFORM_BUFFER; }
-//	void updateUniformBuffer() {
-//		getUbo();
-//		mapMemory(sizeof(UniformBufferObject), &m_uniformBuffer);
-//	}
-//
-//	VkBuffer getUniformBuffer() {
-//		return getBuffer();
-//	}
-//
-//private:
-//	SwapChain * m_swapChain;
-//	UniformBufferObject m_uniformBuffer;
-//
-//	void getUbo() {
-//		static auto startTime = std::chrono::high_resolution_clock::now();
-//		auto currentTime = std::chrono::high_resolution_clock::now();
-//		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-//		
-//		m_uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//		m_uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//		m_uniformBuffer.proj = glm::perspective(glm::radians(45.0f), m_swapChain->getSwapChainExtent().width / (float)m_swapChain->getSwapChainExtent().height, 0.1f, 10.0f);
-//		m_uniformBuffer.proj[1][1] *= -1;
-//	}
-//
-//};
-//
-//UniformBuffer::UniformBuffer(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : Buffer(physicalDevice, device), m_swapChain(swapChain)
-//{
-//	size_t bufferSize = sizeof(UniformBufferObject);
-//	createBufferMemoryWithoutMap(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-//}
-//
-//UniformBuffer::~UniformBuffer()
-//{
-//}
-//
-//class UniformBuffers
-//{
-//public:
-//	UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain);
-//	~UniformBuffers();
-//
-//	VkBuffer getBuffer(uint32_t index) {
-//		return m_uniformBuffers[index]->getUniformBuffer();
-//	}
-//
-//	void updateUniformBuffer(uint32_t index) {
-//		m_uniformBuffers[index]->updateUniformBuffer();
-//	}
-//
-//private:
-//	PhysicalDevice * m_physicalDevice;
-//	Device * m_device;
-//	SwapChain * m_swapChain;
-//	std::vector<UniformBuffer *> m_uniformBuffers;
-//};
-//
-//UniformBuffers::UniformBuffers(PhysicalDevice * physicalDevice, Device * device, SwapChain * swapChain) : m_device(device), m_physicalDevice(physicalDevice), m_swapChain(swapChain), m_uniformBuffers({})
-//{
-//	for (uint32_t i = 0; i < m_swapChain->getImageViews().size(); i++) {
-//		auto x = new UniformBuffer(m_physicalDevice, m_device, m_swapChain);
-//		m_uniformBuffers.push_back(x);
-//	}
-//}
-//
-//UniformBuffers::~UniformBuffers()
-//{
-//	for (auto& m_uniformBuffer : m_uniformBuffers) {
-//		delete(m_uniformBuffer);
-//	}
-//}
