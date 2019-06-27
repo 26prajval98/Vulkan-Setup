@@ -2,6 +2,7 @@
 #include "draw.h"
 #include "defines.h"
 #include "device.h"
+#include "descriptors.h"
 #include "framebuffer.h"
 #include "physicaldevice.h"
 #include "instance.h"
@@ -30,6 +31,7 @@ Draw * draw;
 VertexBuffer * vertexBuffer;
 IndexBuffer * indexBuffer;
 UniformBuffers * uniformBuffers;
+Descriptors * descriptor;
 //std::vector<UniformBuffer *>uniformBuffers;
 
 const std::vector<Vertex> vertices = {
@@ -39,7 +41,9 @@ const std::vector<Vertex> vertices = {
 	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 };
 
-const std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 };
+const std::vector<uint32_t> indices = {
+	0, 1, 2, 2, 3, 0
+};
 
 int main() {
 	window = new Window();
@@ -61,15 +65,12 @@ int main() {
 
 	indexBuffer = new IndexBuffer(physicalDevice, device, indices);
 
-	//for (uint32_t i = 0; i < swapChain->getImages().size(); ++i) {
-	//	auto p_uniformBuffer = new UniformBuffer(physicalDevice, device, swapChain);
-	//	uniformBuffers.push_back(p_uniformBuffer);
-	//}
-
 	uniformBuffers = new UniformBuffers(physicalDevice, device, swapChain);
 	
 	pipeline = new Pipeline(device, renderPass, shaders, swapChain);
 
+	descriptor = new Descriptors(device, swapChain, pipeline, uniformBuffers);
+	
 	frameBuffer = new FrameBuffer(device, swapChain, renderPass);
 
 	auto cmdGraphicsBufferSize = swapChain->getImageViews().size();
@@ -92,9 +93,11 @@ int main() {
 	commandDetails.verticesCount = vertexBuffer->getNoVertices();
 	commandDetails.indicesCount = indexBuffer->getNoIndices();
 
-	renderPass->command(commandDetails);
-
 	draw = new Draw(window, physicalDevice, device, swapChain, semaphore, commands, uniformBuffers);
+
+	draw->command(commandDetails, descriptor, pipeline->pGetPipelineLayout(), renderPass->getRenderPass());
+
+	draw->draw();
 
 	device->freeGraphicsCommand(commands, U(cmdGraphicsBufferSize));
 

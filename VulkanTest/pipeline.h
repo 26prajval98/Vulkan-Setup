@@ -14,6 +14,14 @@ public:
 	Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, SwapChain * swapChain);
 	~Pipeline();
 
+	VkPipelineLayout * pGetPipelineLayout() {
+		return &m_pipelineLayout;
+	}
+
+	VkPipelineLayout getPipelineLayout() {
+		return m_pipelineLayout;
+	}
+
 	VkPipeline getGraphicsPipeline() {
 		return m_pipeline;
 	}
@@ -42,11 +50,16 @@ private:
 		uboLayoutBinding.pImmutableSamplers = nullptr;
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkDescriptorSetLayoutBinding decriptorSetLayoutBindings[] = { uboLayoutBinding };
+		//VkDescriptorSetLayoutBinding decriptorSetLayoutBindings[] = { uboLayoutBinding };
 
-		VkDescriptorSetLayoutCreateInfo createInfo = initialiser::createDescriptorSetLayoutInfo(decriptorSetLayoutBindings);
+		//VkDescriptorSetLayoutCreateInfo createInfo = initialiser::createDescriptorSetLayoutInfo(decriptorSetLayoutBindings);
 
-		ASSERT(vkCreateDescriptorSetLayout(m_device->getDevice(), &createInfo, nullptr, &m_descriptorSetLayout), "Unable to create descriptor info");
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = 1;
+		layoutInfo.pBindings = &uboLayoutBinding;
+
+		ASSERT(vkCreateDescriptorSetLayout(m_device->getDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout), "Unable to create descriptor info");
 	}
 };
 
@@ -108,8 +121,12 @@ Pipeline::Pipeline(Device * device, RenderPass * renderPass, Shaders * shaders, 
 	auto pipelineDynamicInfo = initialiser::createPipelineDynamicStateInfo(pDynamicStates);
 	pipelineStages.pipelineDynamicInfo = pipelineDynamicInfo;
 
-	auto createInfo_0 = initialiser::createPipelineLayoutInfo(m_descriptorSetLayout);
-	ASSERT(vkCreatePipelineLayout(device->getDevice(), &createInfo_0, nullptr, &m_pipelineLayout), "Unable to create pipeline layout");
+	//auto createInfo_0 = initialiser::createPipelineLayoutInfo(m_descriptorSetLayout);
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
+	ASSERT(vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout), "Unable to create pipeline layout");
 
 	m_pipelineLayoutInfos = {};
 	// 0th index in subpass of renderpass (subpassIndex)

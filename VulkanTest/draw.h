@@ -6,12 +6,66 @@
 #include "device.h"
 #include "swapchain.h"
 #include "semaphores.h"
+#include "descriptors.h"
+
+struct CommandDetails {
+	std::vector<VkCommandBuffer> * pCommandBuffer;
+	std::vector<VkFramebuffer> frameBuffer;
+	VkPipeline graphicsPipeline;
+	VkDeviceSize offset;
+	VkBuffer * pVertexBuffer;
+	VkBuffer indexBuffer;
+	uint32_t verticesCount;
+	uint32_t indicesCount;
+};
 
 class Draw
 {
 public:
 	Draw(Window * window, PhysicalDevice* physicalDevice, Device * device, SwapChain * swapChain, Semaphore * semaphore, std::vector<VkCommandBuffer>& commandBuffer, UniformBuffers * uniformBuffers);
 	~Draw();
+
+	void draw() {
+		//x = false;
+		while (!glfwWindowShouldClose(m_window->getWindow()))
+		{
+			glfwPollEvents();
+			drawFrame();
+
+			// Works but reduces performance
+			// vkQueueWaitIdle(m_device->getPresentQueue());
+		}
+
+		// Last constant buffers and all close
+		vkDeviceWaitIdle(m_device->getDevice());
+	}
+
+	void command(CommandDetails &commandDetails, Descriptors * descriptor, VkPipelineLayout * pipelineLayout, VkRenderPass renderPass) {
+		unsigned int i = 0;
+		for (auto& cb : *(commandDetails.pCommandBuffer)) {
+			VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			auto createInfo_0 = initialiser::createCommandBeginInfo();
+			ASSERT(vkBeginCommandBuffer(cb, &createInfo_0), "Command Buffer unable to begin");
+			auto createInfo_1 = initialiser::createRenderPassBeginInfo(commandDetails.frameBuffer[i], m_swapChain->getSwapChainExtent(), renderPass, clearColor);
+
+			// VK_SUBPASS_CONTENTS_INLINE means execute from primary command buffet
+			vkCmdBeginRenderPass(cb, &createInfo_1, VK_SUBPASS_CONTENTS_INLINE);
+			// VK_PIPELINE_BIND_POINT_GRAPHICS is graphics and 1 for compute
+
+			vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, commandDetails.graphicsPipeline);
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(cb, 0, 1, commandDetails.pVertexBuffer, offsets);
+			// cb, vertices, instanceCount = 1 if not instance rendering, firstVertex, firstInstance
+			vkCmdBindIndexBuffer(cb, commandDetails.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipelineLayout, 0, 1, descriptor->pGetDescriptorSet(i), 0, nullptr);
+			vkCmdDrawIndexed(cb, commandDetails.indicesCount, 1, 0, 0, 0);
+
+			vkCmdEndRenderPass(cb);
+			ASSERT(vkEndCommandBuffer(cb), "Failed to record commands");
+			++i;
+		}
+	}
 
 private:
 	Window * m_window;
@@ -64,18 +118,6 @@ Draw::Draw(Window * window, PhysicalDevice* physicalDevice, Device * device, Swa
 m_device(device), m_swapChain(swapChain), m_semaphore(semaphore), m_currentFrameNumber(0), m_commandBuffer(commandBuffer), m_uniformBuffers(uniformBuffers), m_physicalDevice(physicalDevice){
 
 	m_pSwapChain[0] = { swapChain->getSwapChain() };
-	//x = false;
-	while (!glfwWindowShouldClose(window->getWindow()))
-	{
-		glfwPollEvents();
-		drawFrame();
-
-		// Works but reduces performance
-		// vkQueueWaitIdle(m_device->getPresentQueue());
-	}
-
-	// Last constant buffers and all close
-	vkDeviceWaitIdle(m_device->getDevice());
 }
 
 Draw::~Draw()
