@@ -103,6 +103,7 @@ int main() {
 
 	delete(semaphore);
 	delete(frameBuffer);
+	delete(descriptor);
 	delete(uniformBuffers);
 	delete(pipeline);
 	delete(renderPass);

@@ -91,7 +91,7 @@ protected:
 
 	void mapMemory(size_t bufferSize, void * bufferData) {
 		void * m_mappedData;
-		vkMapMemory(m_device->getDevice(), m_bufferMemory, 0, bufferSize, 0, &m_mappedData);
+		ASSERT(vkMapMemory(m_device->getDevice(), m_bufferMemory, 0, bufferSize, 0, &m_mappedData), "Unable to map");
 		memcpy(m_mappedData, bufferData, static_cast<size_t>(bufferSize));
 		vkUnmapMemory(m_device->getDevice(), m_bufferMemory);
 	}
@@ -230,7 +230,7 @@ public:
 		ubo.proj[1][1] *= -1;
 
 		void* data;
-		vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+		ASSERT(vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data), "Unable to Map Memory");
 		memcpy(data, &ubo, sizeof(ubo));
 		vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 	}
@@ -284,6 +284,10 @@ UniformBuffers::UniformBuffers(PhysicalDevice * physicalDevice, Device * device,
 
 UniformBuffers::~UniformBuffers()
 {
+	for (size_t i = 0; i < m_swapChain->getImages().size(); i++) {
+		vkDestroyBuffer(m_device->getDevice(), uniformBuffers[i], nullptr);
+		vkFreeMemory(m_device->getDevice(), uniformBuffersMemory[i], nullptr);
+	}
 }
 
 //
