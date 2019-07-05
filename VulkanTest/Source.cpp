@@ -153,7 +153,7 @@ namespace initialiser {
 		createInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		createInfo.lineWidth = 1.0f;
 		createInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		createInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		createInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		createInfo.depthBiasEnable = VK_FALSE;
 		createInfo.depthBiasConstantFactor = 0.0f; // Optional
 		createInfo.depthBiasClamp = 0.0f; // Optional
@@ -345,6 +345,13 @@ namespace initialiser {
 		return createInfo;
 	}
 
+	VkFenceCreateInfo createFenceInfo() {
+		VkFenceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		// create fences in signaled state
+		createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		return createInfo;
+	}
 }
 
 struct QueueFamilyIndices
@@ -393,8 +400,10 @@ struct VkInfo
 
 	// Handling draw
 	// handling 2 frames in flight must be lesser than max number of image buffers supported by swapchain
-	VkSemaphore m_graphicsSemaphore[2];
-	VkSemaphore m_presentSemaphore[2];
+	VkSemaphore imageAvailableSemaphores[2];
+	VkSemaphore renderFinishedSemaphores[2];
+	VkFence inFlightFences[2];
+
 	// Frame buffer in device so that It can be used in recording draw commands
 	std::vector< VkFramebuffer > frameBuffer;
 
@@ -513,6 +522,14 @@ void PrepareRenderPass(VkSurfaceFormatKHR surfaceFormat)
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	m_info.renderPassInfo.attachmentReferences.resize(1);
 
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	m_info.renderPassInfo.subpassDescriptions = {};
 	VkSubpassDescription subpassDescription = {};
 	// Vulkan currently supports graphics subpass but might support compute ones in future
@@ -524,6 +541,9 @@ void PrepareRenderPass(VkSurfaceFormatKHR surfaceFormat)
 
 	VkRenderPassCreateInfo createInfo_0 = initialiser::createRenderPassInfo(
 		m_info.renderPassInfo.attachmentDescriptions, m_info.renderPassInfo.subpassDescriptions);
+
+	createInfo_0.pDependencies = &dependency;
+	createInfo_0.dependencyCount = 1;
 
 	assert(vkCreateRenderPass(m_info.device, &createInfo_0, nullptr, &m_info.renderPassInfo.renderPass) ==
 		VK_SUCCESS);
@@ -622,6 +642,7 @@ void draw() {
 	pipelineInfo.subpass = 0;
 	pipelineInfo.pDepthStencilState = nullptr; // &pipelineStages.pipelineDepthStencilInfo; // Optional
 	pipelineInfo.pDynamicState = nullptr; //&pipelineStages.pipelineDynamicInfo; // Optional
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
 	if (vkCreateGraphicsPipelines(m_info.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
 		&(m_info.graphicsPipeline)) != VK_SUCCESS)
@@ -642,45 +663,53 @@ void draw() {
 	uint32_t i = 0;
 	for (auto& cb : m_info.commandBuffers[1])
 	{
-		VkClearValue clearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		VkCommandBufferBeginInfo beginInfo = initialiser::createCommandBeginInfo();
-
-		if (vkBeginCommandBuffer(cb, &beginInfo) != VK_SUCCESS)
-		{
+		if (vkBeginCommandBuffer(cb, &beginInfo) != VK_SUCCESS) {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
-		VkRenderPassBeginInfo renderPassInfo = initialiser::createRenderPassBeginInfo(m_info.frameBuffer[i], m_info.extent,
-			m_info.renderPassInfo.renderPass, clearColor
-		);
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = m_info.renderPassInfo.renderPass;
+		renderPassInfo.framebuffer = m_info.frameBuffer[i];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = m_info.extent;
+
+		VkClearValue clearColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
 
 		vkCmdBeginRenderPass(cb, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_info.graphicsPipeline);
 
-		// vkCmdDraw( cb, vertexCount, instanceCount, offset, firstInstance );
+		vkCmdDraw(cb, 3, 1, 0, 0);
 
 		vkCmdEndRenderPass(cb);
 
-		if (vkEndCommandBuffer(cb) != VK_SUCCESS)
-		{
+		if (vkEndCommandBuffer(cb) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
 		}
 		++i;
 	}
 
+	uint32_t currentFrame = 0;
 	while (!glfwWindowShouldClose(window))
 	{
-
+		glfwPollEvents();
 		uint32_t imageIndex;
+		vkWaitForFences(m_info.device, 1, &m_info.inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkResetFences(m_info.device, 1, &m_info.inFlightFences[currentFrame]);
 		vkAcquireNextImageKHR(m_info.device, m_info.swapChain, std::numeric_limits< uint64_t >::max(),
-			m_info.m_graphicsSemaphore[1], VK_NULL_HANDLE, &imageIndex);
+			m_info.imageAvailableSemaphores[1], VK_NULL_HANDLE, &imageIndex);
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = { m_info.m_graphicsSemaphore[1] };
+		VkSemaphore waitSemaphores[] = { m_info.imageAvailableSemaphores[1] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
@@ -689,11 +718,11 @@ void draw() {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &m_info.commandBuffers[1][imageIndex];
 
-		VkSemaphore signalSemaphores[] = { m_info.m_presentSemaphore[1] };
+		VkSemaphore signalSemaphores[] = { m_info.renderFinishedSemaphores[1] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		if (vkQueueSubmit(m_info.queues[1], 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+		if (vkQueueSubmit(m_info.queues[1], 1, &submitInfo, m_info.inFlightFences[currentFrame]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
@@ -711,6 +740,7 @@ void draw() {
 		presentInfo.pImageIndices = &imageIndex;
 
 		vkQueuePresentKHR(m_info.queues[0], &presentInfo);
+		currentFrame = (currentFrame + 1) % 2;
 	}
 
 	//vkDeviceWaitIdle(m_info.device);
@@ -731,11 +761,13 @@ void createSwapChain() {
 	//createInfo_0.window = (ANativeWindow*)ptrWindowSurface;
 	//auto t = vkCreateAndroidSurfaceKHR(m_info.instance, &createInfo_0, nullptr, &m_surface.surface);
 	//assert(t == VK_SUCCESS);
-	auto t = glfwCreateWindowSurface(m_info.instance, window, nullptr, &m_surface.surface);
 	m_surface.surfacePresentModes = getSurfacePresentModes(m_info.physicalDevice, m_surface.surface);
 
-	// Just for now to make things simpler select the gpu which is capable of graphics as it will do presentation and
-	// computation in mobiles
+	VkBool32 windowSurfaceSupport = VK_FALSE;
+	VkResult t = vkGetPhysicalDeviceSurfaceSupportKHR(m_info.physicalDevice, m_info.queueFamilyIndices.computeIndices, m_surface.surface, &windowSurfaceSupport);
+
+	assert(windowSurfaceSupport == VK_TRUE && "Not supported");
+
 	assert(m_info.queueFamilyIndices.graphicIndices == m_info.queueFamilyIndices.computeIndices);
 
 	assert(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_info.physicalDevice, m_surface.surface,
@@ -828,12 +860,14 @@ void device() {
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	m_info.instanceExtensions = std::vector< const char* >(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-	m_info.layers = {};
+	m_info.instanceExtensions.push_back("VK_EXT_debug_report");
+	m_info.layers = { "VK_LAYER_LUNARG_standard_validation" };
 	VkApplicationInfo createInfo_0 = initialiser::createAppInfo();
 	VkInstanceCreateInfo createInfo_1 = initialiser::createInstanceInfo(createInfo_0, m_info.instanceExtensions, m_info.layers);
 	auto t = vkCreateInstance(&createInfo_1, nullptr, &m_info.instance);
 	assert(t == VK_SUCCESS);
+
+	auto sad = glfwCreateWindowSurface(m_info.instance, window, nullptr, &m_surface.surface);
 
 	uint32_t physicalDeviceCount = 0;
 	vkEnumeratePhysicalDevices(m_info.instance, &physicalDeviceCount, nullptr);
@@ -876,10 +910,12 @@ void device() {
 	for (int i = 0; i < 2; i++)
 	{
 		auto createInfo_5 = initialiser::createSemaphoreInfo();
-		assert(vkCreateSemaphore(m_info.device, &createInfo_5, nullptr, &m_info.m_graphicsSemaphore[i]) ==
+		assert(vkCreateSemaphore(m_info.device, &createInfo_5, nullptr, &m_info.imageAvailableSemaphores[i]) ==
 			VK_SUCCESS);
 		auto createInfo_6 = initialiser::createSemaphoreInfo();
-		assert(vkCreateSemaphore(m_info.device, &createInfo_6, nullptr, &m_info.m_presentSemaphore[i]) == VK_SUCCESS);
+		assert(vkCreateSemaphore(m_info.device, &createInfo_6, nullptr, &m_info.renderFinishedSemaphores[i]) == VK_SUCCESS);
+		auto createInfo_7 = initialiser::createFenceInfo();
+		assert(vkCreateFence(m_info.device, &createInfo_7, nullptr, &m_info.inFlightFences[i]) == VK_SUCCESS);
 	}
 }
 
@@ -891,6 +927,7 @@ int main() {
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+
 	m_info = {};
 	device();
 	createSwapChain();
